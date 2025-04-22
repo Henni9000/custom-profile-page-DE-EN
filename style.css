@@ -28,7 +28,7 @@ body {
     justify-content: center;
     align-items: center;
     min-height: 100vh;
-    overflow: hidden; /* Kann je nach Hintergrundbild angepasst werden */
+    overflow: hidden; /* Verhindert Scrollen auf Desktop */
     background-color: #121218; /* Fallback */
     transition: background 0.5s ease-in-out; /* Optional: Übergang beim Wechsel */
 }
@@ -458,4 +458,199 @@ img[src="placeholder_icon.png"] {
     margin-top: 15px;
     font-size: 0.9em;
     font-weight: 500;
+}
+
+
+/* ================================================ */
+/* ================ Responsivität ================ */
+/* ================================================ */
+
+/* Mittlere Bildschirme (Tablets, kleinere Desktops) */
+@media (max-width: 768px) {
+    #profile-card {
+        padding: 30px 25px; /* Weniger horizontales Padding */
+        max-width: 90%;    /* Erlaubt der Karte, schmaler zu werden */
+    }
+
+    #username {
+        font-size: 2.2em; /* Etwas kleiner */
+    }
+
+    #bio {
+        font-size: 1.1em;
+    }
+
+    .pfp-wrapper {
+        width: 110px; /* PFP kleiner */
+        height: 110px;
+        margin-bottom: 20px;
+    }
+
+    #profile-picture {
+        border-width: 3px; /* Dünnerer Rand */
+    }
+
+    .social-links {
+        gap: 18px; /* Weniger Abstand */
+    }
+    .social-links a {
+        font-size: 1.7em; /* Icons kleiner */
+    }
+
+    /* Lautstärkeregler anpassen, damit er nicht zu breit wird */
+    #volume-control-container:hover {
+        width: 140px; /* Etwas schmaler im ausgefahrenen Zustand */
+    }
+    #volume-control-container:hover #volume-slider {
+        width: 80px; /* Slider kürzer */
+    }
+
+    .music-player {
+        padding: 15px;
+        gap: 15px;
+    }
+
+    .music-controls {
+        gap: 15px;
+        font-size: 1.2em; /* Controls etwas kleiner */
+    }
+}
+
+
+/* Kleine Bildschirme (Smartphones) */
+@media (max-width: 480px) {
+    body {
+        /* Erlaube leichtes Scrollen auf Mobilgeräten, falls nötig, sonst bleibt es hidden */
+         /* overflow: auto; */
+    }
+
+    #profile-card {
+        padding: 25px 20px; /* Noch weniger Padding */
+        max-width: 95%;    /* Fast volle Breite */
+        border-radius: 20px; /* Weniger Rundung, spart Platz */
+    }
+
+    #username {
+        font-size: 1.9em; /* Deutlich kleiner */
+        letter-spacing: 1px;
+    }
+
+    #bio {
+        font-size: 1em;
+        margin-bottom: 15px;
+    }
+
+    .location {
+        font-size: 0.9em;
+        margin-bottom: 25px;
+    }
+
+    .pfp-wrapper {
+        width: 90px; /* PFP noch kleiner */
+        height: 90px;
+    }
+
+    .status-section {
+        padding: 12px 15px;
+    }
+
+    #status-pfp {
+        width: 40px; /* Kleineres Status-PFP */
+        height: 40px;
+        margin-right: 12px;
+    }
+
+    .discord-username {
+        font-size: 1em;
+    }
+
+    .copy-icon {
+        font-size: 0.8em;
+    }
+
+    .activity, .activity-sub {
+        font-size: 0.8em; /* Sehr kleine Schrift für Details */
+        line-height: 1.3;
+    }
+
+    .activity-buttons-container {
+        gap: 8px; /* Weniger Abstand zw. Buttons */
+        margin-bottom: 20px;
+    }
+    .activity-button {
+        padding: 6px 12px;
+        font-size: 0.8em;
+    }
+
+    .social-links {
+        gap: 15px; /* Noch weniger Abstand */
+        margin-bottom: 20px;
+    }
+    .social-links a {
+        font-size: 1.6em; /* Icons noch kleiner */
+    }
+
+    .view-count {
+        font-size: 0.85em;
+        margin-bottom: 25px;
+    }
+
+    .music-player {
+        padding: 12px;
+        gap: 12px;
+        /* Optional: Stacken, wenn es zu eng wird */
+        /* flex-direction: column;
+           align-items: stretch; */
+    }
+
+    .music-icon {
+        font-size: 1.7em;
+    }
+
+    .song-title {
+        font-size: 0.9em;
+        margin-bottom: 8px;
+    }
+
+    .progress-bar-container {
+        gap: 8px;
+    }
+
+    .time-current, .time-total {
+        font-size: 0.8em;
+        min-width: 30px; /* Schmaler */
+    }
+
+    .progress-bar {
+        height: 10px; /* Etwas dicker für Touch */
+        border-radius: 5px;
+    }
+    .progress {
+        border-radius: 5px;
+    }
+
+    .music-controls {
+        gap: 12px;
+        font-size: 1.2em; /* Größe beibehalten für Tapping */
+    }
+
+    /* Lautstärkeregler auf sehr kleinen Screens */
+     #volume-control-container {
+        top: 15px;
+        left: 15px;
+     }
+    #volume-control-container:hover {
+        width: 130px; /* Noch schmaler */
+    }
+    #volume-control-container:hover #volume-slider {
+        width: 70px; /* Slider noch kürzer */
+    }
+    #volume-slider::-webkit-slider-thumb {
+        width: 16px; /* Daumen evtl. etwas größer für Touch */
+        height: 16px;
+    }
+    #volume-slider::-moz-range-thumb {
+        width: 16px;
+        height: 16px;
+    }
 }
