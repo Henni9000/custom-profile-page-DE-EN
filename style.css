@@ -1,0 +1,461 @@
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap');
+
+:root {
+    --card-bg: rgba(30, 30, 40, 0.85);
+    --text-color: #f0f0f0;
+    --glow-color: #a0a0ff;
+    --accent-color: #8a8aff;
+    --status-online: #43b581;
+    --status-idle: #faa61a;
+    --status-dnd: #f04747;
+    --status-offline: #747f8d;
+    --copy-success-color: #4caf50;
+    /* RGB values for status pulse animations */
+    --status-online-rgb: 67, 181, 129;
+    --status-dnd-rgb: 240, 71, 71;
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Poppins', sans-serif;
+    color: var(--text-color);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    overflow: hidden; /* Kann je nach Hintergrundbild angepasst werden */
+    background-color: #121218; /* Fallback */
+    transition: background 0.5s ease-in-out; /* Optional: Übergang beim Wechsel */
+}
+
+/* === Hintergrund-Klassen (von JS gesetzt) === */
+body.image-background {
+    background-image: url('background.jpg');
+    background-size: cover;
+    background-position: center center;
+    background-attachment: fixed;
+}
+
+body.gradient-background {
+    background: linear-gradient(-45deg, #1a1a2e, #16213e, #0f3460, #2c3e50);
+    background-size: 400% 400%;
+    animation: gradientAnimation 15s ease infinite;
+}
+
+@keyframes gradientAnimation {
+    0% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+    100% { background-position: 0% 50%; }
+}
+/* ========================================= */
+
+
+/* === Styles für Lautstärkeregler === */
+#volume-control-container {
+    position: fixed; /* Feste Position im Viewport */
+    top: 20px;
+    left: 20px;
+    z-index: 500; /* Über normalem Inhalt, aber unter Loader */
+    background-color: rgba(30, 30, 40, 0.7);
+    backdrop-filter: blur(5px);
+    -webkit-backdrop-filter: blur(5px);
+    padding: 8px;
+    border-radius: 50px; /* Startet rund */
+    display: flex;
+    align-items: center;
+    overflow: hidden; /* Versteckt den Slider initial */
+    width: 40px; /* Breite nur für das Icon */
+    height: 40px; /* Feste Höhe */
+    transition: width 0.35s ease-in-out, background-color 0.3s ease, border-radius 0.3s ease;
+    cursor: pointer;
+}
+
+#volume-icon-display {
+    font-size: 1.1em; /* Größe des Icons */
+    color: var(--text-color);
+    min-width: 24px; /* Verhindert, dass Icon gequetscht wird */
+    text-align: center;
+    transition: margin-right 0.35s ease-in-out;
+    margin-right: 0; /* Kein Abstand zum Slider initial */
+}
+
+#volume-slider {
+    -webkit-appearance: none; /* Override default look */
+    appearance: none;
+    width: 0; /* Startet unsichtbar */
+    height: 6px;
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 3px;
+    outline: none;
+    opacity: 0; /* Startet unsichtbar */
+    transition: width 0.3s ease-in-out 0.1s, opacity 0.2s ease-in-out 0.1s; /* Leichte Verzögerung */
+    cursor: pointer;
+    vertical-align: middle; /* Bessere vertikale Ausrichtung */
+}
+
+/* Slider Thumb Styling */
+#volume-slider::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 14px;
+    height: 14px;
+    background: var(--accent-color);
+    border-radius: 50%;
+    cursor: pointer;
+}
+
+#volume-slider::-moz-range-thumb {
+    width: 14px;
+    height: 14px;
+    background: var(--accent-color);
+    border-radius: 50%;
+    cursor: pointer;
+    border: none; /* Wichtig für Firefox */
+}
+
+/* Hover-Effekt: Container ausfahren */
+#volume-control-container:hover {
+    width: 160px; /* Breite für Icon + Slider */
+    background-color: rgba(30, 30, 40, 0.9);
+    border-radius: 8px; /* Weniger rund im ausgefahrenen Zustand */
+}
+
+/* Hover-Effekt: Slider einblenden und Icon abrücken */
+#volume-control-container:hover #volume-icon-display {
+    margin-right: 10px; /* Abstand zwischen Icon und Slider */
+}
+
+#volume-control-container:hover #volume-slider {
+    width: 100px; /* Breite des sichtbaren Sliders */
+    opacity: 1;
+}
+/* ========================================= */
+
+
+/* --- Loading Animation --- */
+#loader {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    position: fixed;
+    inset: 0; /* Shortcut for top/left/right/bottom: 0 */
+    background-color: rgba(10, 10, 20, 0.95);
+    z-index: 1000;
+    transition: opacity 0.5s ease-out;
+}
+
+.spinner {
+    border: 5px solid rgba(255, 255, 255, 0.2);
+    border-top: 5px solid var(--accent-color);
+    border-radius: 50%;
+    width: 50px;
+    height: 50px;
+    animation: spin 1s linear infinite;
+    margin-bottom: 20px;
+}
+
+#loader p {
+    font-size: 1.2em;
+    color: var(--text-color);
+    opacity: 0; /* Start hidden */
+    animation: fadeInText 0.8s 0.5s ease forwards; /* Fade in after spinner */
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+@keyframes fadeInText {
+    to { opacity: 1; }
+}
+
+
+/* --- Profile Card --- */
+#profile-card {
+    background-color: var(--card-bg);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    padding: 35px 45px;
+    border-radius: 25px;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.4);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    text-align: center;
+    max-width: 480px;
+    width: 90%;
+    opacity: 0;
+    transform: translateY(30px);
+    transition: opacity 0.6s ease-out, transform 0.6s ease-out;
+}
+
+#profile-card.visible {
+    opacity: 1;
+    transform: translateY(0);
+    visibility: visible;
+}
+
+/* Staggered Animation Class */
+.animate-in {
+    opacity: 0;
+    transform: translateY(15px);
+    animation: slideFadeUp 0.5s ease-out forwards;
+    animation-delay: var(--delay, 0s); /* Use custom property for delay */
+}
+
+@keyframes slideFadeUp {
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* --- Profile Picture --- */
+.pfp-wrapper {
+    position: relative;
+    width: 130px;
+    height: 130px;
+    margin: 0 auto 25px auto;
+    transition: transform 0.3s ease; /* For hover effect */
+}
+
+.pfp-wrapper:hover {
+    transform: scale(1.05); /* Scale up on hover */
+}
+
+#profile-picture {
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    border: 4px solid rgba(255, 255, 255, 0.6);
+    box-shadow: 0 0 18px var(--glow-color), 0 0 30px var(--glow-color);
+    object-fit: cover;
+    background-color: #333; /* Placeholder background */
+    animation: pulseGlow 3s infinite ease-in-out alternate; /* Pulsing glow */
+}
+
+@keyframes pulseGlow {
+    from { box-shadow: 0 0 15px var(--glow-color), 0 0 25px var(--glow-color); }
+    to { box-shadow: 0 0 25px var(--glow-color), 0 0 40px var(--glow-color); }
+}
+
+/* Optional: Style for avatar decoration if provided by API */
+.avatar-decoration {
+    position: absolute;
+    top: -10%;
+    left: -10%;
+    width: 120%;
+    height: 120%;
+    pointer-events: none;
+    z-index: 5;
+}
+
+/* --- Text Elements --- */
+#username {
+    font-size: 2.6em;
+    font-weight: 700;
+    margin-bottom: 8px;
+    text-shadow: 0 0 10px var(--glow-color), 0 0 15px var(--glow-color);
+    letter-spacing: 1.5px;
+}
+
+#bio {
+    font-size: 1.15em;
+    margin-bottom: 18px;
+    color: #d0d0d0;
+}
+
+.location {
+    font-size: 0.95em;
+    color: #c0c0c0;
+    margin-bottom: 30px;
+}
+.location i { margin-right: 6px; color: var(--accent-color); }
+
+/* --- Status Section --- */
+.status-section {
+    background-color: rgba(0, 0, 0, 0.25);
+    border-radius: 12px;
+    padding: 15px 18px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 15px;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    transition: background-color 0.3s ease;
+}
+
+.status-section:hover {
+     background-color: rgba(0, 0, 0, 0.35);
+}
+
+.status-left { display: flex; align-items: center; text-align: left; }
+#status-pfp { width: 50px; height: 50px; border-radius: 50%; margin-right: 15px; border: 1px solid rgba(255, 255, 255, 0.25); background-color: #444; }
+.status-text { display: flex; flex-direction: column; }
+
+.discord-user-line { display: flex; align-items: center; gap: 8px; margin-bottom: 3px; }
+.discord-username { font-weight: 600; font-size: 1.05em; }
+
+.copy-icon {
+    font-size: 0.9em;
+    color: #aaa;
+    cursor: pointer;
+    transition: color 0.2s ease;
+}
+.copy-icon:hover { color: var(--accent-color); }
+.copy-icon.copied { color: var(--copy-success-color); }
+
+.activity, .activity-sub { font-size: 0.9em; color: #c5c5c5; line-height: 1.4; }
+#activity-time { font-size: 0.8em; color: #aaa; margin-top: 3px; }
+
+.status-right { display: flex; align-items: center; }
+
+.status-dot {
+    width: 14px;
+    height: 14px;
+    border-radius: 50%;
+    border: 2px solid var(--card-bg);
+    box-shadow: 0 0 6px rgba(0,0,0,0.6);
+    transition: background-color 0.3s ease;
+}
+.status-dot.online { background-color: var(--status-online); animation: pulse 2s infinite ease-in-out; }
+.status-dot.idle { background-color: var(--status-idle); }
+.status-dot.dnd { background-color: var(--status-dnd); animation: pulse-dnd 1.5s infinite ease-in-out; }
+.status-dot.offline { background-color: var(--status-offline); }
+
+@keyframes pulse {
+    0%, 100% { box-shadow: 0 0 0 0 rgba(var(--status-online-rgb), 0.4); }
+    50% { box-shadow: 0 0 0 5px rgba(var(--status-online-rgb), 0); }
+}
+@keyframes pulse-dnd {
+     0%, 100% { box-shadow: 0 0 0 0 rgba(var(--status-dnd-rgb), 0.5); }
+    50% { box-shadow: 0 0 0 6px rgba(var(--status-dnd-rgb), 0); }
+}
+
+/* --- Activity Buttons --- */
+.activity-buttons-container {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 10px;
+    margin-bottom: 25px;
+    margin-top: 5px;
+}
+
+.activity-button {
+    background-color: rgba(255, 255, 255, 0.1);
+    color: var(--text-color);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    border-radius: 8px;
+    padding: 8px 15px;
+    font-size: 0.85em;
+    font-weight: 500;
+    text-decoration: none;
+    transition: background-color 0.3s ease, transform 0.2s ease;
+    cursor: pointer;
+}
+
+.activity-button:hover {
+    background-color: rgba(255, 255, 255, 0.2);
+    transform: translateY(-2px);
+}
+
+/* --- Social Links --- */
+.social-links { margin-bottom: 25px; display: flex; justify-content: center; gap: 22px; }
+.social-links a { color: #d0d0d0; font-size: 1.9em; transition: color 0.3s ease, transform 0.3s ease; }
+.social-links a:hover { color: var(--accent-color); transform: scale(1.15) translateY(-3px); }
+
+/* --- View Count --- */
+.view-count { font-size: 0.95em; color: #b0b0b0; margin-bottom: 30px; }
+.view-count i { margin-right: 6px; }
+
+/* --- Music Player --- */
+.music-player {
+    background-color: rgba(0, 0, 0, 0.35);
+    border-radius: 12px;
+    padding: 18px;
+    display: flex;
+    align-items: center;
+    gap: 18px;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+}
+.music-icon { font-size: 1.9em; color: var(--accent-color); }
+.song-info { flex-grow: 1; text-align: left; }
+.song-title { display: block; font-weight: 600; font-size: 1em; margin-bottom: 10px; }
+
+.progress-bar-container {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    width: 100%;
+}
+
+.time-current, .time-total {
+    font-size: 0.85em;
+    color: #b0b0b0;
+    min-width: 35px; /* Ensure space for MM:SS */
+    text-align: center;
+}
+
+.progress-bar {
+    flex-grow: 1;
+    height: 8px;
+    background-color: rgba(255, 255, 255, 0.15);
+    border-radius: 4px;
+    overflow: hidden;
+    cursor: pointer;
+    position: relative;
+}
+
+.progress {
+    width: 0%;
+    height: 100%;
+    background-color: var(--accent-color);
+    border-radius: 4px;
+    transition: width 0.1s linear;
+    pointer-events: none;
+}
+
+.music-controls {
+    display: flex;
+    align-items: center;
+    gap: 18px;
+    font-size: 1.3em;
+}
+.music-controls i {
+    cursor: pointer;
+    transition: color 0.3s ease, transform 0.2s ease;
+}
+.music-controls i:hover {
+    color: var(--accent-color);
+    transform: scale(1.1);
+}
+.music-controls i:active {
+    transform: scale(0.95);
+}
+
+/* --- Hide Default Audio Player --- */
+#audio-player {
+    display: none;
+    visibility: hidden;
+}
+
+
+/* --- Placeholder Image Styling --- */
+img[src="placeholder_pfp.png"],
+img[src="placeholder_icon.png"] {
+    background-color: #555;
+    border: 1px dashed #888;
+}
+
+/* --- Error Message Styling --- */
+#error-message {
+    color: #f04747;
+    margin-top: 15px;
+    font-size: 0.9em;
+    font-weight: 500;
+}

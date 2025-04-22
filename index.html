@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Henni9000 - Profil</title>
+    <link rel="stylesheet" href="style.css">
+    <!-- Font Awesome for Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+    <!-- Google Fonts (Example: Poppins) -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+
+    <!-- Lautstärkeregler -->
+    <div id="volume-control-container">
+        <i id="volume-icon-display" class="fas fa-volume-high"></i>
+        <input type="range" id="volume-slider" min="0" max="1" step="0.01" value="1">
+    </div>
+
+    <!-- Loading Animation -->
+    <div id="loader">
+        <div class="spinner"></div>
+        <p>Henni9000's Profil wird geladen...</p>
+    </div>
+
+    <!-- Main Profile Card (starts hidden, visibility controlled by JS) -->
+    <div id="profile-card" style="visibility: hidden;">
+
+        <!-- Profile Picture -->
+        <div class="pfp-wrapper animate-in" style="--delay: 0.1s;">
+             <img id="profile-picture" src="placeholder_pfp.png" alt="Profilbild">
+             <!-- <img id="avatar-decoration" src="" alt="" class="avatar-decoration"> -->
+        </div>
+
+        <!-- Username -->
+        <h1 id="username" class="animate-in" style="--delay: 0.2s;">Henni9000</h1>
+
+        <!-- Bio/Tagline -->
+        <p id="bio" class="animate-in" style="--delay: 0.3s;">Henni9000</p>
+
+        <!-- Location -->
+        <p class="location animate-in" style="--delay: 0.4s;"><i class="fas fa-map-marker-alt"></i> Germany</p>
+
+        <!-- Discord Status/Activity Section -->
+        <div class="status-section animate-in" style="--delay: 0.5s;">
+            <div class="status-left">
+                <img id="status-pfp" src="placeholder_pfp.png" alt="Status PFP">
+                <div class="status-text">
+                    <div class="discord-user-line">
+                        <span id="discord-user" class="discord-username">henni9000#0</span>
+                        <i id="copy-username" class="fas fa-copy copy-icon" title="Benutzername kopieren"></i>
+                    </div>
+                    <span id="activity-details" class="activity">Lädt Aktivität...</span>
+                    <span id="activity-state" class="activity-sub"></span>
+                    <span id="activity-time" class="activity-sub"></span>
+                </div>
+            </div>
+             <div class="status-right">
+                <span id="status-indicator" class="status-dot offline"></span>
+             </div>
+        </div>
+
+        <!-- Activity Buttons Container -->
+        <div id="activity-buttons" class="activity-buttons-container animate-in" style="--delay: 0.6s;">
+            <!-- Buttons will be added here by JS -->
+        </div>
+
+        <!-- === Social Links (AKTUALISIERT) === -->
+        <div class="social-links animate-in" style="--delay: 0.7s;">
+            <a href="https://www.youtube.com/@Henni9000" target="_blank" title="YouTube"><i class="fab fa-youtube"></i></a>
+            <a href="https://discord.gg/jv6tqv6cXk" target="_blank" title="Discord"><i class="fab fa-discord"></i></a>
+            <a href="https://github.com/Henni9000" target="_blank" title="GitHub"><i class="fab fa-github"></i></a>
+            <!-- Link für 9000-Radio -->
+            <a href="https://9000-radio.netlify.app/home" target="_blank" title="9000-Radio"><i class="fas fa-link"></i></a>
+             <!-- Link für Gaming -->
+             <a href="https://henni9000.netlify.app/" target="_blank" title="Gaming Projects"><i class="fas fa-gamepad"></i></a>
+        </div>
+        <!-- ===================================== -->
+
+        <!-- View Count (Static) -->
+        <div class="view-count animate-in" style="--delay: 0.8s;">
+            <i class="fas fa-eye"></i> ?
+        </div>
+
+        <!-- Music Player -->
+        <div class="music-player animate-in" style="--delay: 0.9s;">
+            <i class="fas fa-music music-icon"></i>
+            <div class="song-info">
+                <span class="song-title">Die With A Smile - Bruno Mars</span> <!-- Passe dies ggf. an song.mp3 an -->
+                <div class="progress-bar-container">
+                    <span id="time-current" class="time-current">0:00</span>
+                    <div id="progress-bar" class="progress-bar">
+                        <div id="progress" class="progress"></div>
+                    </div>
+                    <span id="time-total" class="time-total">4:11</span>
+                </div>
+            </div>
+            <div class="music-controls">
+                <i class="fas fa-backward-step"></i>
+                <i id="play-pause-btn" class="fas fa-play"></i>
+                <i class="fas fa-forward-step"></i>
+            </div>
+        </div>
+
+        <!-- Error message display area -->
+        <div id="error-message" style="color: red; margin-top: 15px;"></div>
+
+    </div>
+
+    <!-- Audio Element -->
+    <audio id="audio-player" src="song.mp3"></audio> <!-- Stellt sicher, dass 'song.mp3' im Ordner ist -->
+
+    <script src="script.js"></script>
+</body>
+</html>
