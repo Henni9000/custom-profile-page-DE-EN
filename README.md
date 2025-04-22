@@ -58,7 +58,7 @@ My Profile Website - Eine dynamische persönliche Profilseite, die Live-Discord-
 
 1.  **Repository klonen:**
     ```bash
-    git clone https://github.com/Henni9000/henni-prfle.git
+    git clone https://github.com/Henni9000/henni-profile.git
     cd henni-prfle
     ```
 2.  **Musikdatei hinzufügen:** Platziere deine gewünschte Musikdatei als `song.mp3` im Hauptverzeichnis des Projekts.
