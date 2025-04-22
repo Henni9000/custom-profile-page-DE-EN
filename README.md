@@ -1,6 +1,6 @@
 # henni-profile
 
-My Profile Website - Eine dynamische persönliche Profilseite, die Live-Discord-Status, Musikwiedergabe und mehr integriert.
+My Profile Website 🚀 - Eine dynamische persönliche Profilseite, die Live-Discord-Status, Musikwiedergabe und mehr integriert.
 
 [![Screenshot oder GIF hier einfügen](placeholder.png)](<!-- Link zum Live-Demo, falls vorhanden -->)
 <!-- Füge oben einen Screenshot oder ein GIF deiner Website ein und verlinke es ggf. zur Live-Demo -->
