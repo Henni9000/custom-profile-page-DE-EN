@@ -59,7 +59,7 @@ My Profile Website 🚀 - Eine dynamische persönliche Profilseite, die Live-Dis
 1.  **Repository klonen:**
     ```bash
     git clone https://github.com/Henni9000/henni-profile.git
-    cd henni-prfle
+    cd henni-profile
     ```
 2.  **Musikdatei hinzufügen:** Platziere deine gewünschte Musikdatei als `song.mp3` im Hauptverzeichnis des Projekts.
 3.  **Hintergrundbild hinzufügen (Optional):** Platziere dein gewünschtes Hintergrundbild als `background.jpg` im Hauptverzeichnis. Wenn kein Bild gefunden wird, wird der animierte Gradient verwendet.
