@@ -395,3 +395,25 @@ document.addEventListener('DOMContentLoaded', () => {
     if (refreshInterval) clearInterval(refreshInterval);
     refreshInterval = setInterval(fetchData, 30000); // Refresh Discord data every 30 seconds
 });
+// --- Setze das Favicon dynamisch ---
+    const user = userData.discord_user; // Stelle sicher, dass 'user' hier verfügbar ist
+    if (user && user.id && user.avatar) {
+        // Wähle PNG für bessere Favicon-Kompatibilität, auch wenn das Avatar animiert ist
+        const faviconExtension = 'png';
+        const faviconSize = 64; // Eine gute Größe für Favicons
+        const faviconUrl = `https://cdn.discordapp.com/avatars/${user.id}/${user.avatar}.${faviconExtension}?size=${faviconSize}`;
+
+        // Finde das vorhandene Favicon-Link-Element oder erstelle ein neues
+        let link = document.querySelector("link[rel~='icon']");
+        if (!link) {
+            link = document.createElement('link');
+            link.rel = 'icon';
+            // Setze den Typ basierend auf der gewählten Erweiterung
+            link.type = 'image/png';
+            // Füge das neue Link-Element zum Head der Seite hinzu
+            document.head.appendChild(link);
+        }
+        // Setze die href des Link-Elements auf die PFP-URL
+        link.href = faviconUrl;
+        console.log('Favicon auf', faviconUrl, 'gesetzt.'); // Für Debugging
+    }
