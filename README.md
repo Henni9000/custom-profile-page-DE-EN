@@ -87,6 +87,12 @@ Meine Profil Website 🚀 - Eine dynamische persönliche Profilseite, die Live-D
 *   **Soziale Links:** Bearbeite die `<a>`-Tags im `<div class="social-links">`-Abschnitt in `index.html`.
 *   **Songtitel:** Ändere den Text im `<span class="song-title">`-Element in `index.html`, um ihn an deine `song.mp3` anzupassen.
 
+## 🙏 Danksagungen
+
+*   Wesentliche Teile des Codes für dieses Projekt wurden mithilfe des KI-Sprachmodells Google Gemini auf Basis spezifischer Anfragen und Anweisungen generiert und anschließend angepasst und integriert.
+*   Ein Dank geht an die Entwickler der [Lanyard API](https://lanyard.rest/) für die einfache Bereitstellung der Discord-Präsenzdaten.
+*   Danke an [Font Awesome](https://fontawesome.com/) und [Google Fonts](https://fonts.google.com/) für die Icons und Schriftarten.
+
 ## 📄 Lizenz
 
 <!-- Wähle eine Lizenz, z.B. MIT. Füge einen Link zur Lizenzdatei hinzu, wenn du eine erstellst -->
