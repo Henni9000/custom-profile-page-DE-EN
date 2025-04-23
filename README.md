@@ -1,4 +1,4 @@
-# Custom Profil Website Template [DE]
+# Custom Profil Website [DE]
 
 Meine Profil Website 🚀 - Eine dynamische persönliche Profilseite, die Live-Discord-Status, Musikwiedergabe und mehr integriert.
 
