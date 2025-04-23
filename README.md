@@ -1,4 +1,4 @@
-# henni-profile
+# Custom Profil Website Template [DE]
 
 Meine Profil Website 🚀 - Eine dynamische persönliche Profilseite, die Live-Discord-Status, Musikwiedergabe und mehr integriert.
 
