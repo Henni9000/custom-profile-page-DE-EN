@@ -118,21 +118,22 @@ body.gradient-background {
     border: none; /* Wichtig für Firefox */
 }
 
-/* Hover-Effekt: Container ausfahren */
-#volume-control-container:hover {
-    width: 160px; /* Breite für Icon + Slider */
-    background-color: rgba(30, 30, 40, 0.9);
-    border-radius: 8px; /* Weniger rund im ausgefahrenen Zustand */
-}
+/* Hover-Effekt: Container ausfahren (Nur für Desktop) */
+@media (hover: hover) and (pointer: fine) { /* Stellt sicher, dass dies nicht auf Touch-Geräten greift */
+    #volume-control-container:hover {
+        width: 160px; /* Breite für Icon + Slider */
+        background-color: rgba(30, 30, 40, 0.9);
+        border-radius: 8px; /* Weniger rund im ausgefahrenen Zustand */
+    }
 
-/* Hover-Effekt: Slider einblenden und Icon abrücken */
-#volume-control-container:hover #volume-icon-display {
-    margin-right: 10px; /* Abstand zwischen Icon und Slider */
-}
+    #volume-control-container:hover #volume-icon-display {
+        margin-right: 10px; /* Abstand zwischen Icon und Slider */
+    }
 
-#volume-control-container:hover #volume-slider {
-    width: 100px; /* Breite des sichtbaren Sliders */
-    opacity: 1;
+    #volume-control-container:hover #volume-slider {
+        width: 100px; /* Breite des sichtbaren Sliders */
+        opacity: 1;
+    }
 }
 /* ========================================= */
 
@@ -461,120 +462,112 @@ img[src="placeholder_icon.png"] {
 }
 
 
-/* ================================================ */
-/* ================ Responsivität ================ */
-/* ================================================ */
+/* === Responsive Design für kleinere Bildschirme === */
+@media (max-width: 640px) {
 
-/* Mittlere Bildschirme (Tablets, kleinere Desktops) */
-@media (max-width: 768px) {
+    body {
+        /* Erlaube Scrollen auf Mobilgeräten, falls der Inhalt doch überläuft */
+        overflow-y: auto;
+    }
+
+    /* Lautstärkeregler für Mobile anpassen */
+    #volume-control-container {
+        /* Kein Hover-Effekt mehr nötig, mache ihn direkt etwas breiter */
+        width: 140px; /* Breite für Icon + Slider */
+        border-radius: 8px; /* Weniger rund */
+        padding: 6px 8px; /* Etwas kleineres Padding */
+        height: 36px; /* Etwas geringere Höhe */
+        top: 15px; /* Etwas weniger Abstand von oben */
+        left: 15px; /* Etwas weniger Abstand von links */
+        /* Entferne Hover-bedingte Transitions, da sie nicht mehr relevant sind */
+        transition: background-color 0.3s ease;
+        /* Wichtig: Cursor auf default, da der Hover-Effekt wegfällt */
+        cursor: default;
+    }
+
+    #volume-icon-display {
+        font-size: 1em; /* Etwas kleineres Icon */
+        margin-right: 8px; /* Permanenter Abstand zum Slider */
+        min-width: 20px;
+        cursor: pointer; /* Icon bleibt klickbar für Mute */
+    }
+
+    #volume-slider {
+        width: 80px; /* Feste, sichtbare Breite für den Slider */
+        opacity: 1; /* Immer sichtbar */
+        height: 5px; /* Etwas dünner */
+        transition: none; /* Keine Transition für Opacity/Width mehr nötig */
+        cursor: pointer; /* Slider bleibt bedienbar */
+    }
+    #volume-slider::-webkit-slider-thumb { width: 12px; height: 12px; }
+    #volume-slider::-moz-range-thumb { width: 12px; height: 12px; }
+
+
+    /* Profilkarte anpassen */
     #profile-card {
-        padding: 30px 25px; /* Weniger horizontales Padding */
-        max-width: 90%;    /* Erlaubt der Karte, schmaler zu werden */
+        padding: 25px 20px; /* Weniger Padding */
+        max-width: 95%; /* Fast volle Breite nutzen */
+        border-radius: 20px;
     }
 
-    #username {
-        font-size: 2.2em; /* Etwas kleiner */
-    }
-
-    #bio {
-        font-size: 1.1em;
-    }
-
+    /* PFP verkleinern */
     .pfp-wrapper {
-        width: 110px; /* PFP kleiner */
-        height: 110px;
+        width: 100px;
+        height: 100px;
         margin-bottom: 20px;
     }
-
     #profile-picture {
-        border-width: 3px; /* Dünnerer Rand */
+        border-width: 3px;
     }
 
-    .social-links {
-        gap: 18px; /* Weniger Abstand */
-    }
-    .social-links a {
-        font-size: 1.7em; /* Icons kleiner */
-    }
-
-    /* Lautstärkeregler anpassen, damit er nicht zu breit wird */
-    #volume-control-container:hover {
-        width: 140px; /* Etwas schmaler im ausgefahrenen Zustand */
-    }
-    #volume-control-container:hover #volume-slider {
-        width: 80px; /* Slider kürzer */
-    }
-
-    .music-player {
-        padding: 15px;
-        gap: 15px;
-    }
-
-    .music-controls {
-        gap: 15px;
-        font-size: 1.2em; /* Controls etwas kleiner */
-    }
-}
-
-
-/* Kleine Bildschirme (Smartphones) */
-@media (max-width: 480px) {
-    body {
-        /* Erlaube leichtes Scrollen auf Mobilgeräten, falls nötig, sonst bleibt es hidden */
-         /* overflow: auto; */
-    }
-
-    #profile-card {
-        padding: 25px 20px; /* Noch weniger Padding */
-        max-width: 95%;    /* Fast volle Breite */
-        border-radius: 20px; /* Weniger Rundung, spart Platz */
-    }
-
+    /* Schriftgrößen reduzieren */
     #username {
-        font-size: 1.9em; /* Deutlich kleiner */
+        font-size: 2em; /* Deutlich kleiner */
         letter-spacing: 1px;
     }
-
     #bio {
         font-size: 1em;
         margin-bottom: 15px;
     }
-
     .location {
-        font-size: 0.9em;
+        font-size: 0.85em;
         margin-bottom: 25px;
     }
 
-    .pfp-wrapper {
-        width: 90px; /* PFP noch kleiner */
-        height: 90px;
-    }
-
+    /* Statusbereich anpassen */
     .status-section {
-        padding: 12px 15px;
+        padding: 12px 15px; /* Weniger Padding */
+        flex-direction: column; /* Elemente untereinander anordnen */
+        align-items: flex-start; /* Links ausrichten */
+        gap: 10px; /* Abstand zwischen den Teilen */
     }
-
+    .status-left {
+       width: 100%; /* Volle Breite für den linken Teil */
+    }
     #status-pfp {
-        width: 40px; /* Kleineres Status-PFP */
+        width: 40px;
         height: 40px;
-        margin-right: 12px;
+        margin-right: 10px;
     }
-
     .discord-username {
         font-size: 1em;
     }
-
-    .copy-icon {
-        font-size: 0.8em;
-    }
-
-    .activity, .activity-sub {
-        font-size: 0.8em; /* Sehr kleine Schrift für Details */
+     .activity, .activity-sub {
+        font-size: 0.8em; /* Kleinerer Aktivitätstext */
         line-height: 1.3;
+     }
+    .status-right {
+        align-self: flex-end; /* Statuspunkt rechts unten im Kasten */
+        margin-top: -15px; /* Etwas nach oben schieben, um Platz zu sparen */
+    }
+    .status-dot {
+        width: 12px;
+        height: 12px;
     }
 
+    /* Activity Buttons kleiner */
     .activity-buttons-container {
-        gap: 8px; /* Weniger Abstand zw. Buttons */
+        gap: 8px;
         margin-bottom: 20px;
     }
     .activity-button {
@@ -582,75 +575,96 @@ img[src="placeholder_icon.png"] {
         font-size: 0.8em;
     }
 
+    /* Social Links anpassen */
     .social-links {
-        gap: 15px; /* Noch weniger Abstand */
+        gap: 18px; /* Weniger Abstand */
         margin-bottom: 20px;
     }
     .social-links a {
-        font-size: 1.6em; /* Icons noch kleiner */
+        font-size: 1.7em; /* Leicht kleiner */
     }
 
+    /* View Count kleiner */
     .view-count {
         font-size: 0.85em;
         margin-bottom: 25px;
     }
 
+    /* Musik Player anpassen */
     .music-player {
-        padding: 12px;
-        gap: 12px;
-        /* Optional: Stacken, wenn es zu eng wird */
-        /* flex-direction: column;
-           align-items: stretch; */
+        padding: 15px; /* Weniger Padding */
+        gap: 12px; /* Weniger Abstand */
+        flex-wrap: wrap; /* Erlaube Umbruch, falls nötig */
     }
-
     .music-icon {
         font-size: 1.7em;
     }
-
+    .song-info {
+        /* Nimmt weniger Platz ein, damit Controls daneben passen,
+           oder bricht um, wenn Container zu schmal wird */
+        flex-basis: calc(100% - 130px); /* Beispiel: Breite für Controls lassen */
+        min-width: 150px; /* Mindestbreite bevor umgebrochen wird */
+    }
     .song-title {
         font-size: 0.9em;
         margin-bottom: 8px;
     }
-
-    .progress-bar-container {
-        gap: 8px;
-    }
-
     .time-current, .time-total {
         font-size: 0.8em;
-        min-width: 30px; /* Schmaler */
+        min-width: 30px;
     }
-
-    .progress-bar {
-        height: 10px; /* Etwas dicker für Touch */
-        border-radius: 5px;
-    }
-    .progress {
-        border-radius: 5px;
-    }
+    .progress-bar { height: 6px; border-radius: 3px; }
+    .progress { border-radius: 3px; }
 
     .music-controls {
-        gap: 12px;
-        font-size: 1.2em; /* Größe beibehalten für Tapping */
+        font-size: 1.2em;
+        gap: 15px;
+        /* Stellt sicher, dass Controls genug Platz haben oder umbrechen */
+        flex-basis: 100px;
+        justify-content: flex-end;
     }
 
-    /* Lautstärkeregler auf sehr kleinen Screens */
-     #volume-control-container {
-        top: 15px;
-        left: 15px;
-     }
-    #volume-control-container:hover {
-        width: 130px; /* Noch schmaler */
+    /* Animationen - können für Mobile gleich bleiben oder reduziert werden */
+    .animate-in {
+        /* Optional: Animation auf Mobile verkürzen oder ändern */
+        /* animation-duration: 0.3s; */
     }
-    #volume-control-container:hover #volume-slider {
-        width: 70px; /* Slider noch kürzer */
+}
+
+/* Optional: Weiterer Breakpoint für sehr kleine Bildschirme */
+@media (max-width: 380px) {
+    #profile-card {
+        padding: 20px 15px;
     }
-    #volume-slider::-webkit-slider-thumb {
-        width: 16px; /* Daumen evtl. etwas größer für Touch */
-        height: 16px;
+    #username {
+        font-size: 1.8em;
     }
-    #volume-slider::-moz-range-thumb {
-        width: 16px;
-        height: 16px;
+    .social-links {
+        gap: 15px;
+    }
+    .social-links a {
+        font-size: 1.6em;
+    }
+    .music-player {
+        /* Evtl. Elemente hier noch weiter anpassen */
+        flex-direction: column; /* Alles untereinander */
+        align-items: center;
+        gap: 15px;
+    }
+    .song-info {
+        flex-basis: 100%; /* Volle Breite */
+        text-align: center; /* Zentriert, wenn untereinander */
+    }
+    .music-controls {
+         justify-content: center; /* Controls zentrieren */
+         flex-basis: auto;
+         margin-top: 10px;
+    }
+    #volume-control-container {
+        width: 120px; /* Noch etwas kleiner */
+        height: 34px;
+    }
+    #volume-slider {
+        width: 65px; /* Slider noch kleiner */
     }
 }
