@@ -194,7 +194,7 @@ document.addEventListener('DOMContentLoaded', () => {
             }
 
         } else {
-            activityDetailsElement.textContent = 'Leerlauf';
+            activityDetailsElement.textContent = 'Offline';
             activityStateElement.style.display = 'none';
         }
     }
