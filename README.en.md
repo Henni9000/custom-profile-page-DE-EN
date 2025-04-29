@@ -6,7 +6,7 @@
 
 My Profile Website 🚀 - A dynamic personal profile page integrating live Discord status, music playback, multi-language support, and more.
 
-![Website Preview](preview.png)
+![Website Preview](preview_en.png)
 <!-- Replace preview.png with the actual name of your screenshot/GIF -->
 
 ## ✨ Features
