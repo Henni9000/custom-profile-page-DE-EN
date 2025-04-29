@@ -13,6 +13,8 @@
     /* RGB values for status pulse animations */
     --status-online-rgb: 67, 181, 129;
     --status-dnd-rgb: 240, 71, 71;
+    /* RGB for accent color */
+    --accent-color-rgb: 138, 138, 255; /* Entspricht #8a8aff */
 }
 
 * {
@@ -118,7 +120,7 @@ body.gradient-background {
     border: none; /* Wichtig für Firefox */
 }
 
-/* Hover-Effekt: Container ausfahren (Nur für Desktop) */
+/* Hover-Effekt für Lautstärkeregler: Container ausfahren (Nur für Desktop) */
 @media (hover: hover) and (pointer: fine) { /* Stellt sicher, dass dies nicht auf Touch-Geräten greift */
     #volume-control-container:hover {
         width: 160px; /* Breite für Icon + Slider */
@@ -138,6 +140,49 @@ body.gradient-background {
 /* ========================================= */
 
 
+/* === Styles für Sprachumschalter === */
+#language-switcher {
+    position: fixed;
+    top: 70px; /* Unter dem Lautstärkeregler */
+    left: 20px;
+    z-index: 500;
+    display: flex;
+    gap: 5px;
+    background-color: rgba(30, 30, 40, 0.7);
+    backdrop-filter: blur(5px);
+    -webkit-backdrop-filter: blur(5px);
+    padding: 5px;
+    border-radius: 8px;
+}
+
+.lang-button {
+    background-color: transparent;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    color: var(--text-color);
+    padding: 4px 8px;
+    border-radius: 5px;
+    cursor: pointer;
+    font-family: 'Poppins', sans-serif;
+    font-size: 0.8em;
+    font-weight: 600;
+    transition: background-color 0.2s ease, border-color 0.2s ease, opacity 0.2s ease;
+    opacity: 0.7; /* Standardmäßig leicht transparent */
+}
+
+.lang-button:hover {
+    background-color: rgba(255, 255, 255, 0.1);
+    opacity: 1;
+}
+
+.lang-button.active {
+    border-color: var(--accent-color);
+    background-color: rgba(var(--accent-color-rgb), 0.2); /* Akzentfarbe mit Transparenz */
+    opacity: 1;
+    cursor: default;
+}
+/* ========================================= */
+
+
 /* --- Loading Animation --- */
 #loader {
     display: flex;
@@ -145,7 +190,7 @@ body.gradient-background {
     justify-content: center;
     align-items: center;
     position: fixed;
-    inset: 0; /* Shortcut for top/left/right/bottom: 0 */
+    inset: 0;
     background-color: rgba(10, 10, 20, 0.95);
     z-index: 1000;
     transition: opacity 0.5s ease-out;
@@ -164,8 +209,8 @@ body.gradient-background {
 #loader p {
     font-size: 1.2em;
     color: var(--text-color);
-    opacity: 0; /* Start hidden */
-    animation: fadeInText 0.8s 0.5s ease forwards; /* Fade in after spinner */
+    opacity: 0;
+    animation: fadeInText 0.8s 0.5s ease forwards;
 }
 
 @keyframes spin {
@@ -205,7 +250,7 @@ body.gradient-background {
     opacity: 0;
     transform: translateY(15px);
     animation: slideFadeUp 0.5s ease-out forwards;
-    animation-delay: var(--delay, 0s); /* Use custom property for delay */
+    animation-delay: var(--delay, 0s);
 }
 
 @keyframes slideFadeUp {
@@ -221,11 +266,11 @@ body.gradient-background {
     width: 130px;
     height: 130px;
     margin: 0 auto 25px auto;
-    transition: transform 0.3s ease; /* For hover effect */
+    transition: transform 0.3s ease;
 }
 
 .pfp-wrapper:hover {
-    transform: scale(1.05); /* Scale up on hover */
+    transform: scale(1.05);
 }
 
 #profile-picture {
@@ -235,8 +280,8 @@ body.gradient-background {
     border: 4px solid rgba(255, 255, 255, 0.6);
     box-shadow: 0 0 18px var(--glow-color), 0 0 30px var(--glow-color);
     object-fit: cover;
-    background-color: #333; /* Placeholder background */
-    animation: pulseGlow 3s infinite ease-in-out alternate; /* Pulsing glow */
+    background-color: #333;
+    animation: pulseGlow 3s infinite ease-in-out alternate;
 }
 
 @keyframes pulseGlow {
@@ -244,7 +289,7 @@ body.gradient-background {
     to { box-shadow: 0 0 25px var(--glow-color), 0 0 40px var(--glow-color); }
 }
 
-/* Optional: Style for avatar decoration if provided by API */
+/* Optional: Style for avatar decoration */
 .avatar-decoration {
     position: absolute;
     top: -10%;
@@ -311,7 +356,7 @@ body.gradient-background {
 .copy-icon.copied { color: var(--copy-success-color); }
 
 .activity, .activity-sub { font-size: 0.9em; color: #c5c5c5; line-height: 1.4; }
-#activity-time { font-size: 0.8em; color: #aaa; margin-top: 3px; }
+#activity-time { font-size: 0.8em; color: #aaa; margin-top: 3px; display: block; /* Sicherstellen, dass es Platz einnimmt */ }
 
 .status-right { display: flex; align-items: center; }
 
@@ -398,7 +443,7 @@ body.gradient-background {
 .time-current, .time-total {
     font-size: 0.85em;
     color: #b0b0b0;
-    min-width: 35px; /* Ensure space for MM:SS */
+    min-width: 35px;
     text-align: center;
 }
 
@@ -466,47 +511,51 @@ img[src="placeholder_icon.png"] {
 @media (max-width: 640px) {
 
     body {
-        /* Erlaube Scrollen auf Mobilgeräten, falls der Inhalt doch überläuft */
         overflow-y: auto;
     }
 
     /* Lautstärkeregler für Mobile anpassen */
     #volume-control-container {
-        /* Kein Hover-Effekt mehr nötig, mache ihn direkt etwas breiter */
-        width: 140px; /* Breite für Icon + Slider */
-        border-radius: 8px; /* Weniger rund */
-        padding: 6px 8px; /* Etwas kleineres Padding */
-        height: 36px; /* Etwas geringere Höhe */
-        top: 15px; /* Etwas weniger Abstand von oben */
-        left: 15px; /* Etwas weniger Abstand von links */
-        /* Entferne Hover-bedingte Transitions, da sie nicht mehr relevant sind */
+        width: 140px;
+        border-radius: 8px;
+        padding: 6px 8px;
+        height: 36px;
+        top: 15px;
+        left: 15px;
         transition: background-color 0.3s ease;
-        /* Wichtig: Cursor auf default, da der Hover-Effekt wegfällt */
         cursor: default;
     }
 
     #volume-icon-display {
-        font-size: 1em; /* Etwas kleineres Icon */
-        margin-right: 8px; /* Permanenter Abstand zum Slider */
+        font-size: 1em;
+        margin-right: 8px;
         min-width: 20px;
-        cursor: pointer; /* Icon bleibt klickbar für Mute */
+        cursor: pointer;
     }
 
     #volume-slider {
-        width: 80px; /* Feste, sichtbare Breite für den Slider */
-        opacity: 1; /* Immer sichtbar */
-        height: 5px; /* Etwas dünner */
-        transition: none; /* Keine Transition für Opacity/Width mehr nötig */
-        cursor: pointer; /* Slider bleibt bedienbar */
+        width: 80px;
+        opacity: 1;
+        height: 5px;
+        transition: none;
+        cursor: pointer;
     }
     #volume-slider::-webkit-slider-thumb { width: 12px; height: 12px; }
     #volume-slider::-moz-range-thumb { width: 12px; height: 12px; }
 
+    /* Sprachumschalter für Mobile anpassen */
+    #language-switcher {
+        top: 60px; /* Direkt unter dem Lautstärkeregler */
+        left: 15px;
+        padding: 4px;
+    }
+    .lang-button { padding: 3px 6px; font-size: 0.75em; }
+
 
     /* Profilkarte anpassen */
     #profile-card {
-        padding: 25px 20px; /* Weniger Padding */
-        max-width: 95%; /* Fast volle Breite nutzen */
+        padding: 25px 20px;
+        max-width: 95%;
         border-radius: 20px;
     }
 
@@ -522,7 +571,7 @@ img[src="placeholder_icon.png"] {
 
     /* Schriftgrößen reduzieren */
     #username {
-        font-size: 2em; /* Deutlich kleiner */
+        font-size: 2em;
         letter-spacing: 1px;
     }
     #bio {
@@ -536,13 +585,13 @@ img[src="placeholder_icon.png"] {
 
     /* Statusbereich anpassen */
     .status-section {
-        padding: 12px 15px; /* Weniger Padding */
-        flex-direction: column; /* Elemente untereinander anordnen */
-        align-items: flex-start; /* Links ausrichten */
-        gap: 10px; /* Abstand zwischen den Teilen */
+        padding: 12px 15px;
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 10px;
     }
     .status-left {
-       width: 100%; /* Volle Breite für den linken Teil */
+       width: 100%;
     }
     #status-pfp {
         width: 40px;
@@ -553,12 +602,15 @@ img[src="placeholder_icon.png"] {
         font-size: 1em;
     }
      .activity, .activity-sub {
-        font-size: 0.8em; /* Kleinerer Aktivitätstext */
+        font-size: 0.8em;
         line-height: 1.3;
      }
+     #activity-time {
+         display: block; /* Stellt sicher, dass der Zeitstempel angezeigt wird */
+     }
     .status-right {
-        align-self: flex-end; /* Statuspunkt rechts unten im Kasten */
-        margin-top: -15px; /* Etwas nach oben schieben, um Platz zu sparen */
+        align-self: flex-end;
+        margin-top: -15px;
     }
     .status-dot {
         width: 12px;
@@ -577,11 +629,11 @@ img[src="placeholder_icon.png"] {
 
     /* Social Links anpassen */
     .social-links {
-        gap: 18px; /* Weniger Abstand */
+        gap: 18px;
         margin-bottom: 20px;
     }
     .social-links a {
-        font-size: 1.7em; /* Leicht kleiner */
+        font-size: 1.7em;
     }
 
     /* View Count kleiner */
@@ -592,18 +644,16 @@ img[src="placeholder_icon.png"] {
 
     /* Musik Player anpassen */
     .music-player {
-        padding: 15px; /* Weniger Padding */
-        gap: 12px; /* Weniger Abstand */
-        flex-wrap: wrap; /* Erlaube Umbruch, falls nötig */
+        padding: 15px;
+        gap: 12px;
+        flex-wrap: wrap;
     }
     .music-icon {
         font-size: 1.7em;
     }
     .song-info {
-        /* Nimmt weniger Platz ein, damit Controls daneben passen,
-           oder bricht um, wenn Container zu schmal wird */
-        flex-basis: calc(100% - 130px); /* Beispiel: Breite für Controls lassen */
-        min-width: 150px; /* Mindestbreite bevor umgebrochen wird */
+        flex-basis: calc(100% - 130px);
+        min-width: 150px;
     }
     .song-title {
         font-size: 0.9em;
@@ -619,14 +669,12 @@ img[src="placeholder_icon.png"] {
     .music-controls {
         font-size: 1.2em;
         gap: 15px;
-        /* Stellt sicher, dass Controls genug Platz haben oder umbrechen */
         flex-basis: 100px;
         justify-content: flex-end;
     }
 
-    /* Animationen - können für Mobile gleich bleiben oder reduziert werden */
+    /* Animationen */
     .animate-in {
-        /* Optional: Animation auf Mobile verkürzen oder ändern */
         /* animation-duration: 0.3s; */
     }
 }
@@ -646,25 +694,27 @@ img[src="placeholder_icon.png"] {
         font-size: 1.6em;
     }
     .music-player {
-        /* Evtl. Elemente hier noch weiter anpassen */
-        flex-direction: column; /* Alles untereinander */
+        flex-direction: column;
         align-items: center;
         gap: 15px;
     }
     .song-info {
-        flex-basis: 100%; /* Volle Breite */
-        text-align: center; /* Zentriert, wenn untereinander */
+        flex-basis: 100%;
+        text-align: center;
     }
     .music-controls {
-         justify-content: center; /* Controls zentrieren */
+         justify-content: center;
          flex-basis: auto;
          margin-top: 10px;
     }
     #volume-control-container {
-        width: 120px; /* Noch etwas kleiner */
+        width: 120px;
         height: 34px;
     }
     #volume-slider {
-        width: 65px; /* Slider noch kleiner */
+        width: 65px;
+    }
+     #language-switcher {
+        top: 55px; /* Noch etwas höher */
     }
 }
