@@ -70,7 +70,7 @@ Meine Profil Website 🚀 - Eine dynamische persönliche Profilseite, die Live-D
     cd henni-profile
     ```
     *(Stelle sicher, dass der Repository-Name `henni-profile` korrekt ist)*
-2.  **Musikdatei hinzufügen:** Platziere deine gewünschte Musikdatei als `song.mp3` im Hauptverzeichnis des Projekts.
+2.  **Musikdatei hinzufügen:** Platziere deine gewünschte Musikdatei als `song.mp3` im Hauptverzeichnis des Projekts. *(Siehe Lizenzhinweis unten)*
 3.  **Hintergrundbild hinzufügen (Optional):** Platziere dein gewünschtes Hintergrundbild als `background.jpg` im Hauptverzeichnis. Wenn kein Bild gefunden wird, wird der animierte Gradient verwendet.
 4.  **Lokalen Webserver starten:** Da die Seite API-Anfragen (Lanyard) durchführt und lokale Audiodateien lädt, funktioniert sie am besten über einen lokalen Webserver.
     *   **Option 1 (VS Code):** Installiere die "Live Server"-Erweiterung und starte sie.
@@ -88,6 +88,7 @@ Meine Profil Website 🚀 - Eine dynamische persönliche Profilseite, die Live-D
 ## 🙏 Danksagungen
 
 *   Wesentliche Teile des Codes für dieses Projekt wurden mithilfe des KI-Sprachmodells Google Gemini auf Basis spezifischer Anfragen und Anweisungen generiert und anschließend angepasst und integriert.
+*   Die verwendete Musik ist 'Vibing Over Venus' von Kevin MacLeod. Heruntergeladen von [incompetech.com](https://incompetech.com). Lizenziert unter Creative Commons: By Attribution 4.0 ([CC BY 4.0](http://creativecommons.org/licenses/by/4.0/)).
 *   Ein Dank geht an die Entwickler der [Lanyard API](https://lanyard.rest/) für die einfache Bereitstellung der Discord-Präsenzdaten.
 *   Danke an [Font Awesome](https://fontawesome.com/) und [Google Fonts](https://fonts.google.com/) für die Icons und Schriftarten.
 
