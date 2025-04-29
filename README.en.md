@@ -88,7 +88,7 @@ My Profile Website 🚀 - A dynamic personal profile page integrating live Disco
 ## 🙏 Acknowledgements
 
 *   Significant parts of the code for this project were generated with the assistance of the AI language model Google Gemini, based on specific requests and instructions, and subsequently adapted and integrated.
-*   The music used is 'Cloud Dancer' by Kevin MacLeod. Downloaded from [incompetech.com](https://incompetech.com). Licensed under Creative Commons: By Attribution 4.0 ([CC BY 4.0](http://creativecommons.org/licenses/by/4.0/)).
+*   The music used is 'Vibing Over Venus' by Kevin MacLeod. Downloaded from [incompetech.com](https://incompetech.com). Licensed under Creative Commons: By Attribution 4.0 ([CC BY 4.0](http://creativecommons.org/licenses/by/4.0/)).
 *   Thanks to the developers of the [Lanyard API](https://lanyard.rest/) for easily providing Discord presence data.
 *   Thanks to [Font Awesome](https://fontawesome.com/) and [Google Fonts](https://fonts.google.com/) for the icons and fonts.
 
