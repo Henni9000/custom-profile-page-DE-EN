@@ -6,7 +6,7 @@
 
 Meine Profil Website 🚀 - Eine dynamische persönliche Profilseite, die Live-Discord-Status, Musikwiedergabe, Mehrsprachigkeit und mehr integriert.
 
-![Vorschau der Website](preview.png)
+![Vorschau der Website](preview_de.png)
 <!-- Ersetze preview.png mit dem tatsächlichen Namen deines Screenshots/GIFs -->
 
 ## ✨ Features
