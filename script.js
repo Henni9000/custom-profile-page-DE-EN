@@ -94,10 +94,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // === Sprachumschaltfunktion ===
     function setLanguage(lang) {
-        if (!translations[lang]) {
-            console.warn(`Sprache "${lang}" nicht gefunden.`);
-            return;
-        }
+        if (!translations[lang]) return;
         currentLanguage = lang;
         localStorage.setItem('preferredLanguage', lang);
         document.documentElement.lang = lang;
@@ -117,17 +114,13 @@ document.addEventListener('DOMContentLoaded', () => {
         langDeButton.classList.toggle('active', lang === 'de');
         langEnButton.classList.toggle('active', lang === 'en');
 
-        // Aktualisiere dynamische Texte, falls Daten vorhanden sind
         if (window.currentUserData) {
             updateDynamicTexts(window.currentUserData);
         } else {
-             // Setze Lade-Texte neu, falls noch keine Daten da sind
             activityDetailsElement.textContent = translations[currentLanguage].activityLoading;
-            document.querySelector('#loader p')?.setAttribute('data-translate', 'loadingText'); // Stelle sicher, dass Loader Text auch gesetzt wird
+            document.querySelector('#loader p')?.setAttribute('data-translate', 'loadingText');
             document.querySelector('#loader p').textContent = translations[currentLanguage].loadingText;
         }
-
-        // Setze initialen Tooltip für Copy-Button neu
         copyUsernameButton.title = translations[currentLanguage].copyTooltip;
     }
 
@@ -142,25 +135,27 @@ document.addEventListener('DOMContentLoaded', () => {
 
         let primaryActivity = activities.find(act => act.type !== 4) || activities.find(act => act.type === 4) || null;
          if (!primaryActivity) {
+            // Wichtig: Setze den Text hier erneut basierend auf dem Status
             activityDetailsElement.textContent = (status === 'offline') ? translations[currentLanguage].activityOffline : translations[currentLanguage].activityDoingNothing;
-            activityTimeElement.style.display = 'none'; // Verstecke Zeitstempel, wenn nichts getan wird
+            activityTimeElement.style.display = 'none';
          } else if (primaryActivity.timestamps?.start) {
              activityTimeElement.textContent = `${translations[currentLanguage].timestampPrefix} ${formatDuration(primaryActivity.timestamps.start)}`;
-             activityTimeElement.style.display = 'block'; // Zeige Zeitstempel an
+             activityTimeElement.style.display = 'block';
          } else {
-             activityTimeElement.style.display = 'none'; // Verstecke Zeitstempel, wenn Aktivität keine Zeit hat
+             activityTimeElement.style.display = 'none';
          }
-         // Fehlermeldung wird bei Bedarf in displayError gesetzt
     }
-
 
     // --- Initial Fetch Function ---
     const fetchData = () => {
         console.log("Fetching new data...");
         errorMessageElement.textContent = '';
-        activityDetailsElement.textContent = translations[currentLanguage].activityLoading;
-        activityStateElement.textContent = '';
-        activityTimeElement.style.display = 'none'; // Verstecke initial
+        // Setze Lade-Text nur, wenn keine Daten vorhanden sind oder initial geladen wird
+        if (!window.currentUserData) {
+            activityDetailsElement.textContent = translations[currentLanguage].activityLoading;
+            activityStateElement.textContent = '';
+            activityTimeElement.style.display = 'none';
+        }
 
         fetch(apiUrl)
             .then(response => response.ok ? response.json() : Promise.reject(new Error(`HTTP error! Status: ${response.status}`)))
@@ -170,7 +165,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     updateProfile(data.data);
                     if (!profileCard.classList.contains('visible')) showCard();
                 } else {
-                    window.currentUserData = null; // Ungültige Daten erhalten
+                    window.currentUserData = null;
                     throw new Error('API did not return success or data is missing.');
                 }
             })
@@ -179,8 +174,10 @@ document.addEventListener('DOMContentLoaded', () => {
                 window.currentUserData = null;
                 displayError(`${error.message}.`);
                 if (!profileCard.classList.contains('visible')) showCard();
-                 // Versuche, Standardtexte anzuzeigen, auch wenn API fehlschlägt
-                 activityDetailsElement.textContent = translations[currentLanguage].activityOffline; // Zeige Offline als Fallback
+                // Setze Text auf Offline bei Fehler, überschreibt "Lädt..."
+                activityDetailsElement.textContent = translations[currentLanguage].activityOffline;
+                activityStateElement.textContent = '';
+                activityTimeElement.style.display = 'none';
             });
     };
 
@@ -200,7 +197,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const activities = userData.activities;
         const status = userData.discord_status;
 
-        // === Favicon setzen (HIER an der richtigen Stelle) ===
+        // === Favicon setzen ===
         if (user && user.id && user.avatar) {
             const faviconUrl = `https://cdn.discordapp.com/avatars/${user.id}/${user.avatar}.png?size=64`;
             let link = document.querySelector("link[rel~='icon']");
@@ -208,62 +205,67 @@ document.addEventListener('DOMContentLoaded', () => {
             link.href = faviconUrl;
             console.log('Favicon auf', faviconUrl, 'gesetzt.');
         }
-        // ==================================================
 
-        // PFP and Username
+        // === PFP, Username, Bio, Decoration, Discord Username, Status Dot ===
         const pfpUrl = `https://cdn.discordapp.com/avatars/${user.id}/${user.avatar}.${user.avatar.startsWith('a_') ? 'gif' : 'png'}?size=256`;
         profilePicture.src = pfpUrl;
         statusPfp.src = pfpUrl;
         const displayName = user.global_name || user.username;
         usernameElement.textContent = displayName;
-
-        // Avatar Decoration
-        if (avatarDecoration && user.avatar_decoration_data?.asset) {
-            const decorationUrl = `https://cdn.discordapp.com/avatar-decorations/${user.id}/${user.avatar_decoration_data.asset}.png?size=160`;
-            avatarDecoration.src = decorationUrl;
-            avatarDecoration.style.display = 'block';
-        } else if (avatarDecoration) {
-            avatarDecoration.style.display = 'none';
-        }
-
-        // Bio (sprachabhängig)
+        if (avatarDecoration && user.avatar_decoration_data?.asset) { const decorationUrl = `https://cdn.discordapp.com/avatar-decorations/${user.id}/${user.avatar_decoration_data.asset}.png?size=160`; avatarDecoration.src = decorationUrl; avatarDecoration.style.display = 'block';} else if (avatarDecoration) { avatarDecoration.style.display = 'none'; }
         bioElement.textContent = `${translations[currentLanguage].bioPrefix} ${displayName}`;
-
-        // Discord Username & Copy Button
         const fullUsername = user.discriminator === "0" ? user.username : `${user.username}#${user.discriminator}`;
         discordUserElement.textContent = fullUsername;
         copyUsernameButton.dataset.username = fullUsername;
-
-        // Status Indicator
         statusIndicator.className = `status-dot ${status}`;
         statusIndicator.classList.remove('pulse-online', 'pulse-dnd');
         if (status === 'online') statusIndicator.classList.add('pulse-online');
         else if (status === 'dnd') statusIndicator.classList.add('pulse-dnd');
 
-        // Activity
-        let primaryActivity = activities.find(act => act.type !== 4) || activities.find(act => act.type === 4) || null;
+        // === Activity Processing (REVISED LOGIC) ===
         activityButtonsContainer.innerHTML = '';
-        activityStateElement.textContent = ''; // Reset state display
+        activityStateElement.textContent = '';
+        activityStateElement.style.display = 'none';
+        activityTimeElement.textContent = '';
+        activityTimeElement.style.display = 'none';
 
+        // 1. Finde primäre Aktivität
+        let primaryActivity = activities.find(act => act.type !== 4) || activities.find(act => act.type === 4) || null;
+
+        // 2. Setze Texte basierend auf Aktivität oder Status
         if (primaryActivity) {
             let detailsText = '';
             let stateText = '';
-             if (primaryActivity.type === 4 && primaryActivity.state) { detailsText = primaryActivity.state; if (primaryActivity.emoji?.name) detailsText = `${primaryActivity.emoji.name} ${detailsText}`; }
-             else { detailsText = primaryActivity.name || ''; if (primaryActivity.details) stateText = primaryActivity.details; if (primaryActivity.state) { if (stateText && primaryActivity.state !== stateText) stateText += ` | ${primaryActivity.state}`; else if (!stateText) stateText = primaryActivity.state; } }
 
-            activityDetailsElement.textContent = detailsText || '...';
-            activityStateElement.textContent = stateText;
-            activityStateElement.style.display = stateText ? 'block' : 'none';
+            // Extrahiere Details/State
+            if (primaryActivity.type === 4 && primaryActivity.state) {
+                detailsText = primaryActivity.state;
+                if (primaryActivity.emoji?.name) detailsText = `${primaryActivity.emoji.name} ${detailsText}`;
+            } else {
+                detailsText = primaryActivity.name || '';
+                if (primaryActivity.details) stateText = primaryActivity.details;
+                if (primaryActivity.state) {
+                    if (stateText && primaryActivity.state !== stateText) stateText += ` | ${primaryActivity.state}`;
+                    else if (!stateText) stateText = primaryActivity.state;
+                }
+            }
 
-            // Timestamp (sprachabhängig)
+            // Setze Haupttext (Details) oder Fallback
+            activityDetailsElement.textContent = detailsText || translations[currentLanguage].activityDoingNothing; // Zeige "Doing nothing" wenn Details leer sind
+
+            // Zeige State, falls vorhanden
+            if (stateText) {
+                activityStateElement.textContent = stateText;
+                activityStateElement.style.display = 'block';
+            }
+
+            // Zeige Timestamp, falls vorhanden
             if (primaryActivity.timestamps?.start) {
                 activityTimeElement.textContent = `${translations[currentLanguage].timestampPrefix} ${formatDuration(primaryActivity.timestamps.start)}`;
                 activityTimeElement.style.display = 'block';
-            } else {
-                 activityTimeElement.style.display = 'none';
             }
 
-            // Buttons
+            // Füge Buttons hinzu, falls vorhanden
              if (primaryActivity.buttons && primaryActivity.buttons.length > 0) {
                 primaryActivity.buttons.forEach(buttonLabel => {
                     const buttonElement = document.createElement('span');
@@ -274,12 +276,13 @@ document.addEventListener('DOMContentLoaded', () => {
             }
 
         } else {
-            // Keine Aktivität (sprachabhängig)
+            // Keine primäre Aktivität -> Setze Text basierend auf Status
             activityDetailsElement.textContent = (status === 'offline') ? translations[currentLanguage].activityOffline : translations[currentLanguage].activityDoingNothing;
-            activityStateElement.style.display = 'none';
-            activityTimeElement.style.display = 'none';
+            // State und Time bleiben versteckt
         }
+        // === ENDE Activity Processing ===
     }
+
 
     // --- Helper Function to Format Duration ---
     function formatDuration(startTime) {
@@ -311,13 +314,10 @@ document.addEventListener('DOMContentLoaded', () => {
         const usernameToCopy = copyUsernameButton.dataset.username;
         if (!usernameToCopy) return;
         navigator.clipboard.writeText(usernameToCopy).then(() => {
-            const originalTitle = translations[currentLanguage].copyTooltip; // Hole aktuellen Tooltip-Text
+            const originalTitle = translations[currentLanguage].copyTooltip;
             copyUsernameButton.title = translations[currentLanguage].copySuccess;
             copyUsernameButton.classList.add('copied');
-            setTimeout(() => {
-                copyUsernameButton.classList.remove('copied');
-                copyUsernameButton.title = originalTitle;
-            }, 1500);
+            setTimeout(() => { copyUsernameButton.classList.remove('copied'); copyUsernameButton.title = originalTitle; }, 1500);
         }).catch(err => {
             console.error('Kopieren fehlgeschlagen:', err);
             const originalTitle = translations[currentLanguage].copyTooltip;
@@ -347,13 +347,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // --- Initialisierung ---
     const preferredLanguage = localStorage.getItem('preferredLanguage');
-    setLanguage((preferredLanguage && translations[preferredLanguage]) ? preferredLanguage : 'de'); // Setze Sprache oder Fallback
+    setLanguage((preferredLanguage && translations[preferredLanguage]) ? preferredLanguage : 'de');
 
-    // Event Listener für Sprachbuttons
     langDeButton.addEventListener('click', () => setLanguage('de'));
     langEnButton.addEventListener('click', () => setLanguage('en'));
 
-    // Erste Daten laden und Refresh-Timer starten
     fetchData();
     if (refreshInterval) clearInterval(refreshInterval);
     refreshInterval = setInterval(fetchData, 30000);
