@@ -1,5 +1,9 @@
 # Custom Profile Website [EN]
 
+*(Deutsche Version dieser README hier verfügbar: [Deutsche README](README.md))*
+
+---
+
 My Profile Website 🚀 - A dynamic personal profile page integrating live Discord status, music playback, multi-language support, and more.
 
 ![Website Preview](preview.png)
@@ -66,7 +70,7 @@ My Profile Website 🚀 - A dynamic personal profile page integrating live Disco
     cd henni-profile
     ```
     *(Make sure the repository name `henni-profile` is correct)*
-2.  **Add Music File:** Place your desired music file as `song.mp3` in the project's root directory.
+2.  **Add Music File:** Place your desired music file as `song.mp3` in the project's root directory. *(See license note below)*
 3.  **Add Background Image (Optional):** Place your desired background image as `background.jpg` in the root directory. If no image is found, the animated gradient will be used.
 4.  **Start a Local Web Server:** Since the page makes API requests (Lanyard) and loads local audio files, it works best when served via a local web server.
     *   **Option 1 (VS Code):** Install the "Live Server" extension and start it.
@@ -84,6 +88,7 @@ My Profile Website 🚀 - A dynamic personal profile page integrating live Disco
 ## 🙏 Acknowledgements
 
 *   Significant parts of the code for this project were generated with the assistance of the AI language model Google Gemini, based on specific requests and instructions, and subsequently adapted and integrated.
+*   The music used is 'Cloud Dancer' by Kevin MacLeod. Downloaded from [incompetech.com](https://incompetech.com). Licensed under Creative Commons: By Attribution 4.0 ([CC BY 4.0](http://creativecommons.org/licenses/by/4.0/)).
 *   Thanks to the developers of the [Lanyard API](https://lanyard.rest/) for easily providing Discord presence data.
 *   Thanks to [Font Awesome](https://fontawesome.com/) and [Google Fonts](https://fonts.google.com/) for the icons and fonts.
 
