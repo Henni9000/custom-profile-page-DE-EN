@@ -1,5 +1,9 @@
 # Custom Profil Website [DE]
 
+*(For the English version of this README, please click here: [English README](README.en.md))*
+
+---
+
 Meine Profil Website 🚀 - Eine dynamische persönliche Profilseite, die Live-Discord-Status, Musikwiedergabe, Mehrsprachigkeit und mehr integriert.
 
 ![Vorschau der Website](preview.png)
