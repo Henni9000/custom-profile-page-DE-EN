@@ -15,8 +15,8 @@ document.addEventListener('DOMContentLoaded', () => {
             copyTooltip: "Benutzername kopieren",
             copySuccess: "Kopiert!",
             copyError: "Kopieren fehlgeschlagen!",
-            activityLoading: "Lädt Aktivität...", // Wird nur noch initial verwendet
-            activityDoingNothing: "Macht gerade nichts...",
+            activityLoading: "Lädt Aktivität...",
+            activityDoingNothing: "Macht gerade nichts...", // Ersetzt Leerlauf
             activityOffline: "Offline",
             socialYoutube: "YouTube",
             socialDiscord: "Discord",
@@ -35,8 +35,8 @@ document.addEventListener('DOMContentLoaded', () => {
             copyTooltip: "Copy Username",
             copySuccess: "Copied!",
             copyError: "Copy failed!",
-            activityLoading: "Loading activity...", // Used only initially
-            activityDoingNothing: "Doing nothing...",
+            activityLoading: "Loading activity...",
+            activityDoingNothing: "Doing nothing...", // English version
             activityOffline: "Offline",
             socialYoutube: "YouTube",
             socialDiscord: "Discord",
@@ -48,17 +48,16 @@ document.addEventListener('DOMContentLoaded', () => {
             timestampPrefix: "for"
         }
     };
-    let currentLanguage = 'de';
-    window.currentUserData = null; // Globale Variable für letzte gültige Daten
+    let currentLanguage = 'de'; // Standard Sprache
 
     // === Hintergrund-Logik ===
     const backgroundImageUrl = 'background.jpg';
     const imageTester = new Image();
-    imageTester.onload = () => { bodyElement.classList.add('image-background'); bodyElement.classList.remove('gradient-background'); };
-    imageTester.onerror = () => { bodyElement.classList.add('gradient-background'); bodyElement.classList.remove('image-background'); };
+    imageTester.onload = function() { bodyElement.classList.add('image-background'); bodyElement.classList.remove('gradient-background'); };
+    imageTester.onerror = function() { bodyElement.classList.add('gradient-background'); bodyElement.classList.remove('image-background'); };
     imageTester.src = backgroundImageUrl;
 
-    // --- Elemente ---
+    // --- Elemente zum Update (Discord-bezogen) ---
     const profilePicture = document.getElementById('profile-picture');
     const avatarDecoration = document.getElementById('avatar-decoration');
     const usernameElement = document.getElementById('username');
@@ -71,108 +70,136 @@ document.addEventListener('DOMContentLoaded', () => {
     const activityTimeElement = document.getElementById('activity-time');
     const activityButtonsContainer = document.getElementById('activity-buttons');
     const statusIndicator = document.getElementById('status-indicator');
+
+    // --- Music Player Elemente ---
     const audioElement = document.getElementById('audio-player');
     const playPauseButton = document.getElementById('play-pause-btn');
     const progressBar = document.getElementById('progress-bar');
     const progressElement = document.getElementById('progress');
     const currentTimeElement = document.getElementById('time-current');
     const totalTimeElement = document.getElementById('time-total');
+
+    // --- Lautstärke Elemente ---
     const volumeControlContainer = document.getElementById('volume-control-container');
     const volumeIconDisplay = document.getElementById('volume-icon-display');
     const volumeSlider = document.getElementById('volume-slider');
+    let lastVolume = audioElement.volume;
+
+    // --- Sprachumschalter Elemente ---
     const langDeButton = document.getElementById('lang-de');
     const langEnButton = document.getElementById('lang-en');
-    let lastVolume = audioElement.volume;
+
+    // Globale Variable zum Speichern der letzten Lanyard-Daten
+    let lastFetchedUserData = null;
+
     let refreshInterval;
 
     // === Sprachumschaltfunktion ===
     function setLanguage(lang) {
-        if (!translations[lang]) return;
+        if (!translations[lang]) {
+            console.warn(`Sprache "${lang}" nicht gefunden.`);
+            return;
+        }
         currentLanguage = lang;
-        localStorage.setItem('preferredLanguage', lang);
-        document.documentElement.lang = lang;
+        localStorage.setItem('preferredLanguage', lang); // Präferenz speichern
+        document.documentElement.lang = lang; // Setzt lang-Attribut des HTML-Tags
 
+        // Aktualisiere alle Elemente mit data-translate Attribut
         document.querySelectorAll('[data-translate]').forEach(el => {
             const key = el.getAttribute('data-translate');
-            if (translations[lang][key]) el.textContent = translations[lang][key];
+            if (translations[lang][key]) {
+                el.textContent = translations[lang][key];
+            }
         });
+
+        // Aktualisiere alle Elemente mit data-translate-title Attribut
         document.querySelectorAll('[data-translate-title]').forEach(el => {
             const key = el.getAttribute('data-translate-title');
-            if (translations[lang][key]) el.title = translations[lang][key];
+            if (translations[lang][key]) {
+                el.title = translations[lang][key];
+            }
         });
+
+        // Aktualisiere Seitentitel
         document.title = translations[lang].pageTitle;
+
+        // Markiere aktiven Sprachbutton
         langDeButton.classList.toggle('active', lang === 'de');
         langEnButton.classList.toggle('active', lang === 'en');
 
-        // Übersetze dynamische Texte neu, BASIEREND AUF GESPEICHERTEN DATEN
-        if (window.currentUserData) {
-            updateDynamicTexts(window.currentUserData);
-        } else {
-            // Wenn noch keine Daten da sind, nur den Loader-Text aktualisieren
-             document.querySelector('#loader p').textContent = translations[currentLanguage].loadingText;
-             // Und den initialen Aktivitätsplatzhalter (falls noch sichtbar)
-             if (!profileCard.classList.contains('visible')) { // Nur wenn Karte noch nicht sichtbar ist
-                 activityDetailsElement.textContent = translations[currentLanguage].activityLoading;
-             }
+        // Aktualisiere dynamische Texte, falls API-Daten schon da sind
+        if (lastFetchedUserData) {
+           updateDynamicTexts(lastFetchedUserData); // Aktualisiere nur sprachabhängige Texte
         }
-         // Tooltip immer neu setzen
-         copyUsernameButton.title = translations[currentLanguage].copyTooltip;
+
+        // Setze initialen Tooltip für Copy-Button neu
+        copyUsernameButton.title = translations[currentLanguage].copyTooltip;
     }
 
-    // === Hilfsfunktion zum Aktualisieren NUR sprachabhängiger dynamischer Texte ===
-    // Wird aufgerufen, wenn Sprache wechselt UND Daten vorhanden sind
+    // === Hilfsfunktion zum Aktualisieren sprachabhängiger dynamischer Texte ===
+    // (Wird aufgerufen, wenn Sprache wechselt UND Daten vorhanden sind)
     function updateDynamicTexts(userData) {
         const user = userData.discord_user;
         const status = userData.discord_status;
         const activities = userData.activities;
 
-        // Bio
+        // Bio aktualisieren
         const displayName = user.global_name || user.username;
         bioElement.textContent = `${translations[currentLanguage].bioPrefix} ${displayName}`;
 
-        // Aktivitätstext (nur falls keine spezifische Aktivität) & Zeitstempel-Präfix
+        // Aktivitätstext aktualisieren (wenn keine Aktivität)
         let primaryActivity = activities.find(act => act.type !== 4) || activities.find(act => act.type === 4) || null;
          if (!primaryActivity) {
-            activityDetailsElement.textContent = (status === 'offline') ? translations[currentLanguage].activityOffline : translations[currentLanguage].activityDoingNothing;
-            // Zeitstempel wird hier nicht neu gesetzt, da keiner vorhanden ist
-         } else if (primaryActivity.timestamps?.start) {
-             // Nur das Präfix des Zeitstempels aktualisieren
-             activityTimeElement.textContent = `${translations[currentLanguage].timestampPrefix} ${formatDuration(primaryActivity.timestamps.start)}`; // formatDuration nutzt schon currentLanguage
+            if (status === 'offline') {
+                activityDetailsElement.textContent = translations[currentLanguage].activityOffline;
+            } else {
+                activityDetailsElement.textContent = translations[currentLanguage].activityDoingNothing;
+            }
+             activityStateElement.style.display = 'none';
+             activityTimeElement.style.display = 'none';
+         } else {
+             // Timestamp Prefix aktualisieren, falls vorhanden
+             if (primaryActivity.timestamps?.start) {
+                 activityTimeElement.textContent = `${translations[currentLanguage].timestampPrefix} ${formatDuration(primaryActivity.timestamps.start)}`;
+                 activityTimeElement.style.display = 'block';
+             } else {
+                 activityTimeElement.style.display = 'none';
+             }
+             // Details/State werden in updateProfile sowieso gesetzt
          }
-        // Der Rest (wie state, buttons) wird nicht direkt übersetzt oder bleibt gleich
     }
+
 
     // --- Initial Fetch Function ---
     const fetchData = () => {
         console.log("Fetching new data...");
-        errorMessageElement.textContent = ''; // Fehler löschen, aber Lade-Text nicht neu setzen!
+        errorMessageElement.textContent = '';
+        // Setze initialen Lade-Text in aktueller Sprache
+        activityDetailsElement.textContent = translations[currentLanguage].activityLoading;
+        activityStateElement.textContent = '';
+        activityTimeElement.textContent = '';
+        activityButtonsContainer.innerHTML = ''; // Buttons leeren
+
 
         fetch(apiUrl)
             .then(response => response.ok ? response.json() : Promise.reject(new Error(`HTTP error! Status: ${response.status}`)))
             .then(data => {
                 if (data.success && data.data) {
-                    window.currentUserData = data.data; // Speichere gültige Daten
-                    updateProfile(data.data); // Rendere mit den neuen Daten
-                    if (!profileCard.classList.contains('visible')) showCard(); // Zeige Karte beim ersten Mal
+                    lastFetchedUserData = data.data; // Speichere Daten global für Sprachwechsel
+                    updateProfile(data.data); // Rendere mit aktueller Sprache
+                    if (!profileCard.classList.contains('visible')) showCard();
                 } else {
-                    // API meldet keinen Erfolg oder keine Daten
-                    // Behalte window.currentUserData (letzter guter Stand), zeige Fehler
-                    throw new Error('API did not return success or valid data.');
+                    lastFetchedUserData = null; // Lösche alte Daten bei Fehler
+                    throw new Error('API did not return success or data is missing.');
                 }
             })
             .catch(error => {
                 console.error('Error fetching Discord data:', error);
-                 // window.currentUserData nicht löschen, alten Stand behalten
-                displayError(`${error.message}.`);
-                 // Karte anzeigen, falls noch nicht geschehen (mit altem/Fehlerstatus)
+                lastFetchedUserData = null; // Lösche alte Daten bei Fehler
+                displayError(error.message); // Error-Funktion kümmert sich um Sprache
                 if (!profileCard.classList.contains('visible')) showCard();
-                // Setze Aktivität auf Offline als Fallback im Fehlerfall,
-                // wenn noch nie gültige Daten empfangen wurden
-                if (!window.currentUserData) {
-                   activityDetailsElement.textContent = translations[currentLanguage].activityOffline;
-                   activityStateElement.textContent = '';
-                   activityTimeElement.style.display = 'none';
-                }
+                // Setze Aktivität auf Fehler oder Standard
+                activityDetailsElement.textContent = translations[currentLanguage].errorPrefix;
             });
     };
 
@@ -186,17 +213,31 @@ document.addEventListener('DOMContentLoaded', () => {
         }, 500);
     };
 
+
     // --- Function to Update DOM Elements (Discord Part) ---
-    // Diese Funktion rendert ALLES basierend auf den übergebenen userData
     function updateProfile(userData) {
         const user = userData.discord_user;
         const activities = userData.activities;
         const status = userData.discord_status;
 
-        // Favicon setzen
-        if (user && user.id && user.avatar) { /* ... (wie zuvor) ... */ }
+        // --- Setze das Favicon dynamisch --- (Korrekter Platz!)
+        if (user && user.id && user.avatar) {
+            const faviconExtension = 'png';
+            const faviconSize = 64;
+            const faviconUrl = `https://cdn.discordapp.com/avatars/${user.id}/${user.avatar}.${faviconExtension}?size=${faviconSize}`;
+            let link = document.querySelector("link[rel~='icon']");
+            if (!link) {
+                link = document.createElement('link');
+                link.rel = 'icon';
+                link.type = 'image/png';
+                document.head.appendChild(link);
+            }
+            link.href = faviconUrl;
+        }
+        // --- Ende Favicon setzen ---
 
-        // PFP, Username etc.
+
+        // PFP and Username (nicht sprachabhängig)
         const pfpUrl = `https://cdn.discordapp.com/avatars/${user.id}/${user.avatar}.${user.avatar.startsWith('a_') ? 'gif' : 'png'}?size=256`;
         profilePicture.src = pfpUrl;
         statusPfp.src = pfpUrl;
@@ -204,28 +245,33 @@ document.addEventListener('DOMContentLoaded', () => {
         usernameElement.textContent = displayName;
 
         // Avatar Decoration
-        if (avatarDecoration && user.avatar_decoration_data?.asset) { /* ... */ }
-        else if (avatarDecoration) { avatarDecoration.style.display = 'none'; }
+        if (avatarDecoration && user.avatar_decoration_data?.asset) {
+             const decorationUrl = `https://cdn.discordapp.com/avatar-decorations/${user.id}/${user.avatar_decoration_data.asset}.png?size=160`;
+             avatarDecoration.src = decorationUrl;
+             avatarDecoration.style.display = 'block';
+        } else if (avatarDecoration) {
+            avatarDecoration.style.display = 'none';
+        }
 
         // Bio (sprachabhängig)
         bioElement.textContent = `${translations[currentLanguage].bioPrefix} ${displayName}`;
 
-        // Discord Username & Copy Button
+        // Discord Username (nicht sprachabhängig) & Copy Button (Tooltip ist sprachabhängig, wird von setLanguage gesetzt)
         const fullUsername = user.discriminator === "0" ? user.username : `${user.username}#${user.discriminator}`;
         discordUserElement.textContent = fullUsername;
         copyUsernameButton.dataset.username = fullUsername;
 
-        // Status Indicator
+        // Status Indicator (nicht sprachabhängig)
         statusIndicator.className = `status-dot ${status}`;
         statusIndicator.classList.remove('pulse-online', 'pulse-dnd');
         if (status === 'online') statusIndicator.classList.add('pulse-online');
         else if (status === 'dnd') statusIndicator.classList.add('pulse-dnd');
 
-        // Activity
+        // Activity (Details/State sind nicht sprachabhängig, aber die Standardtexte schon)
         let primaryActivity = activities.find(act => act.type !== 4) || activities.find(act => act.type === 4) || null;
         activityButtonsContainer.innerHTML = '';
-        activityStateElement.textContent = ''; // State immer zurücksetzen
-        activityTimeElement.style.display = 'none'; // Zeitstempel initial verstecken
+        activityStateElement.textContent = ''; // Reset
+        activityTimeElement.textContent = ''; // Reset
 
         if (primaryActivity) {
             let detailsText = '';
@@ -240,17 +286,30 @@ document.addEventListener('DOMContentLoaded', () => {
             // Timestamp (sprachabhängig)
             if (primaryActivity.timestamps?.start) {
                 activityTimeElement.textContent = `${translations[currentLanguage].timestampPrefix} ${formatDuration(primaryActivity.timestamps.start)}`;
-                activityTimeElement.style.display = 'block';
+                 activityTimeElement.style.display = 'block';
+            } else {
+                 activityTimeElement.style.display = 'none';
             }
 
-            // Buttons
-             if (primaryActivity.buttons?.length > 0) { /* ... (Button-Logik wie zuvor) ... */ }
+            // Buttons (nicht sprachabhängig)
+            if (primaryActivity.buttons && primaryActivity.buttons.length > 0) {
+                 primaryActivity.buttons.forEach(buttonLabel => {
+                    const buttonElement = document.createElement('span');
+                    buttonElement.classList.add('activity-button');
+                    buttonElement.textContent = buttonLabel;
+                    activityButtonsContainer.appendChild(buttonElement);
+                });
+            }
 
         } else {
             // Keine Aktivität (sprachabhängig)
-            activityDetailsElement.textContent = (status === 'offline') ? translations[currentLanguage].activityOffline : translations[currentLanguage].activityDoingNothing;
+            if (status === 'offline') {
+                activityDetailsElement.textContent = translations[currentLanguage].activityOffline;
+            } else {
+                activityDetailsElement.textContent = translations[currentLanguage].activityDoingNothing;
+            }
             activityStateElement.style.display = 'none';
-            // Zeitstempel bleibt versteckt
+            activityTimeElement.style.display = 'none';
         }
     }
 
@@ -258,17 +317,22 @@ document.addEventListener('DOMContentLoaded', () => {
     function formatDuration(startTime) {
         const now = Date.now();
         const diffSeconds = Math.floor((now - startTime) / 1000);
-        if (diffSeconds < 60) return `${diffSeconds} ${currentLanguage === 'de' ? 'Sek.' : 'sec'}`;
+        if (diffSeconds < 60) return `${diffSeconds} Sek.`;
         const diffMinutes = Math.floor(diffSeconds / 60);
-        if (diffMinutes < 60) return `${diffMinutes} ${currentLanguage === 'de' ? 'Min.' : 'min'}`;
+        if (diffMinutes < 60) return `${diffMinutes} Min.`;
         const diffHours = Math.floor(diffMinutes / 60);
         const remainingMinutes = diffMinutes % 60;
-        if (remainingMinutes === 0) return `${diffHours} ${currentLanguage === 'de' ? 'Std.' : 'hr'}`;
-        return `${diffHours} ${currentLanguage === 'de' ? 'Std.' : 'hr'} ${remainingMinutes} ${currentLanguage === 'de' ? 'Min.' : 'min'}`;
+        if (remainingMinutes === 0) return `${diffHours} Std.`;
+        return `${diffHours} Std. ${remainingMinutes} Min.`;
     }
 
     // --- Helper Function to Format Time (MM:SS) ---
-    function formatTime(seconds) { /* ... (unverändert) ... */ }
+    function formatTime(seconds) {
+        const minutes = Math.floor(seconds / 60);
+        const secs = Math.floor(seconds % 60);
+        return `${minutes}:${secs < 10 ? '0' : ''}${secs}`;
+    }
+
 
     // --- Function to Display Errors ---
     function displayError(message) {
@@ -276,45 +340,56 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // --- Event Listener for Copy Username ---
-    copyUsernameButton.addEventListener('click', () => { /* ... (aktualisiert für Sprache) ... */ });
+    copyUsernameButton.addEventListener('click', () => {
+        const usernameToCopy = copyUsernameButton.dataset.username;
+        if (!usernameToCopy) return;
+        navigator.clipboard.writeText(usernameToCopy).then(() => {
+            const originalTitle = copyUsernameButton.title;
+            copyUsernameButton.title = translations[currentLanguage].copySuccess;
+            copyUsernameButton.classList.add('copied');
+            setTimeout(() => {
+                copyUsernameButton.classList.remove('copied');
+                copyUsernameButton.title = translations[currentLanguage].copyTooltip; // Setze Tooltip in aktueller Sprache zurück
+            }, 1500);
+        }).catch(err => {
+            console.error('Kopieren fehlgeschlagen:', err);
+            const originalTitle = copyUsernameButton.title;
+            copyUsernameButton.title = translations[currentLanguage].copyError;
+            setTimeout(() => { copyUsernameButton.title = translations[currentLanguage].copyTooltip; }, 1500);
+        });
+    });
 
     // --- === Music Player Logic === ---
-    function togglePlayPause() { /* ... */ }
-    function updatePlayPauseIcon() { /* ... */ }
-    function updateProgress() { /* ... */ }
-    function setProgress(e) { /* ... */ }
+    function togglePlayPause() { if (audioElement.paused || audioElement.ended) { audioElement.play().catch(error => console.error("Fehler beim Abspielen:", error)); } else { audioElement.pause(); } }
+    function updatePlayPauseIcon() { if (audioElement.paused || audioElement.ended) { playPauseButton.classList.remove('fa-pause'); playPauseButton.classList.add('fa-play'); } else { playPauseButton.classList.remove('fa-play'); playPauseButton.classList.add('fa-pause'); } }
+    function updateProgress() { if (audioElement.duration) { const progressPercent = (audioElement.currentTime / audioElement.duration) * 100; progressElement.style.width = `${progressPercent}%`; currentTimeElement.textContent = formatTime(audioElement.currentTime); } else { progressElement.style.width = '0%'; currentTimeElement.textContent = formatTime(0); } }
+    function setProgress(e) { const width = progressBar.clientWidth; const clickX = e.offsetX; const duration = audioElement.duration; if (duration) audioElement.currentTime = (clickX / width) * duration; }
     playPauseButton.addEventListener('click', togglePlayPause);
     audioElement.addEventListener('play', updatePlayPauseIcon);
     audioElement.addEventListener('pause', updatePlayPauseIcon);
     audioElement.addEventListener('ended', updatePlayPauseIcon);
-    audioElement.addEventListener('loadedmetadata', () => { /* ... */ });
+    audioElement.addEventListener('loadedmetadata', () => { totalTimeElement.textContent = formatTime(audioElement.duration); updateProgress(); const initialVolume = audioElement.volume; volumeSlider.value = initialVolume; lastVolume = initialVolume; updateVolumeIcon(initialVolume); });
     audioElement.addEventListener('timeupdate', updateProgress);
     progressBar.addEventListener('click', setProgress);
 
     // --- === Volume Control Logic === ---
-    function updateVolumeIcon(volume) { /* ... */ }
-    volumeSlider.addEventListener('input', (e) => { /* ... */ });
-    volumeIconDisplay.addEventListener('click', () => { /* ... */ });
-    audioElement.addEventListener('volumechange', () => { /* ... */ });
+    function updateVolumeIcon(volume) { volumeIconDisplay.classList.remove('fa-volume-high', 'fa-volume-low', 'fa-volume-off'); if (audioElement.muted || volume === 0) { volumeIconDisplay.classList.add('fa-volume-off'); } else if (volume < 0.5) { volumeIconDisplay.classList.add('fa-volume-low'); } else { volumeIconDisplay.classList.add('fa-volume-high'); } }
+    volumeSlider.addEventListener('input', (e) => { const newVolume = parseFloat(e.target.value); audioElement.volume = newVolume; if (audioElement.muted && newVolume > 0) { audioElement.muted = false; } lastVolume = newVolume; updateVolumeIcon(newVolume); });
+    volumeIconDisplay.addEventListener('click', () => { if (audioElement.muted) { audioElement.muted = false; audioElement.volume = lastVolume; volumeSlider.value = lastVolume; updateVolumeIcon(lastVolume); } else { lastVolume = audioElement.volume; audioElement.muted = true; volumeSlider.value = 0; updateVolumeIcon(0); } });
+    audioElement.addEventListener('volumechange', () => { if (!audioElement.muted) { volumeSlider.value = audioElement.volume; updateVolumeIcon(audioElement.volume); } else { volumeSlider.value = 0; updateVolumeIcon(0); } });
 
 
     // --- Initialisierung ---
-    // Sprache beim Laden setzen (bevor der erste Fetch startet)
+    // Sprache beim Laden setzen
     const preferredLanguage = localStorage.getItem('preferredLanguage');
-    setLanguage((preferredLanguage && translations[preferredLanguage]) ? preferredLanguage : 'de');
-
-    // Setze initialen Lade-Text EINMALIG
-     document.querySelector('#loader p').textContent = translations[currentLanguage].loadingText;
-     activityDetailsElement.textContent = translations[currentLanguage].activityLoading; // Auch für die Karte initial setzen
-
+    setLanguage(preferredLanguage && translations[preferredLanguage] ? preferredLanguage : 'de'); // Setze bevorzugte oder Standard
 
     // Event Listener für Sprachbuttons
     langDeButton.addEventListener('click', () => setLanguage('de'));
     langEnButton.addEventListener('click', () => setLanguage('en'));
 
     // Erste Daten laden und Refresh-Timer starten
-    fetchData(); // Jetzt wird der Lade-Text nicht mehr in fetchData gesetzt
+    fetchData();
     if (refreshInterval) clearInterval(refreshInterval);
-    // Behalte 30 Sekunden bei, 10 Sekunden ist sehr oft für Lanyard
-    refreshInterval = setInterval(fetchData, 30000);
+    refreshInterval = setInterval(fetchData, 30000); // Refresh Discord data every 30 seconds
 });
