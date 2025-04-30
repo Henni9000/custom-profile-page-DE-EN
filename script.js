@@ -1,9 +1,9 @@
 document.addEventListener('DOMContentLoaded', () => {
-    // --- Globale Variablen und Konstanten ---
     const apiUrl = 'https://api.lanyard.rest/v1/users/739397631998165023';
-    let currentLanguage = 'de'; // Standard Sprache
-    let lastFetchedUserData = null; // Zum Speichern der API-Daten für Sprachwechsel
-    let refreshInterval; // Für Lanyard Refresh
+    const loader = document.getElementById('loader');
+    const profileCard = document.getElementById('profile-card');
+    const errorMessageElement = document.getElementById('error-message');
+    const bodyElement = document.body;
 
     // === Übersetzungen ===
     const translations = {
@@ -16,7 +16,7 @@ document.addEventListener('DOMContentLoaded', () => {
             copySuccess: "Kopiert!",
             copyError: "Kopieren fehlgeschlagen!",
             activityLoading: "Lädt Aktivität...",
-            activityDoingNothing: "Macht gerade nichts...",
+            activityDoingNothing: "Macht gerade nichts...", // Ersetzt Leerlauf
             activityOffline: "Offline",
             socialYoutube: "YouTube",
             socialDiscord: "Discord",
@@ -25,26 +25,7 @@ document.addEventListener('DOMContentLoaded', () => {
             socialLink2: "Gaming Projects",
             errorPrefix: "Fehler:",
             errorRetry: "Versuche es erneut...",
-            timestampPrefix: "seit",
-            // NEUE KEYS FÜR KARTEN
-            aboutTitle: "Über Mich",
-            aboutText1: "Hey! Ich bin Henni, ein junger Entwickler aus Deutschland mit einer Leidenschaft für Coding, Gaming und Musik. Ich experimentiere gerne mit verschiedenen Technologien und erstelle kleine Web-Projekte wie dieses hier.",
-            aboutSkillsTitle: "Skills",
-            aboutText2: "Wenn ich nicht gerade programmiere, findest du mich wahrscheinlich in irgendeinem Spiel oder beim Hören von Musik auf meinem 9000-Radio Projekt.",
-            projectsTitle: "Projekte",
-            project1Title: "Gaming Website",
-            project1Desc: "Eine Sammlung meiner kleinen Spielprojekte und Experimente.",
-            projectLink: "Demo ansehen",
-            project2Title: "9000-Radio",
-            project2Desc: "Ein Web-Radio-Projekt zum Entdecken und Hören von Musik.",
-            project3Title: "Dieses Profil",
-            project3Desc: "Die Seite, die du gerade siehst! Gebaut mit HTML, CSS und Vanilla JS.",
-            projectRepoLink: "Repository ansehen",
-            contactTitle: "Kontakt",
-            contactText: "Am besten erreichst du mich über Discord oder schau auf meinen anderen Profilen vorbei!",
-            prevCardLabel: "Vorherige Karte",
-            nextCardLabel: "Nächste Karte",
-            goToCardLabel: "Gehe zu Karte" // Wird in JS mit Nummer ergänzt
+            timestampPrefix: "seit"
         },
         'en': {
             pageTitle: "Henni9000 - Profile",
@@ -55,7 +36,7 @@ document.addEventListener('DOMContentLoaded', () => {
             copySuccess: "Copied!",
             copyError: "Copy failed!",
             activityLoading: "Loading activity...",
-            activityDoingNothing: "Doing nothing...",
+            activityDoingNothing: "Doing nothing...", // English version
             activityOffline: "Offline",
             socialYoutube: "YouTube",
             socialDiscord: "Discord",
@@ -64,34 +45,19 @@ document.addEventListener('DOMContentLoaded', () => {
             socialLink2: "Gaming Projects",
             errorPrefix: "Error:",
             errorRetry: "Retrying...",
-            timestampPrefix: "for",
-            // NEUE KEYS FÜR KARTEN (Englisch)
-            aboutTitle: "About Me",
-            aboutText1: "Hey! I'm Henni, a young developer from Germany with a passion for coding, gaming, and music. I enjoy experimenting with different technologies and creating small web projects like this one.",
-            aboutSkillsTitle: "Skills",
-            aboutText2: "When I'm not coding, you'll probably find me in some game or listening to music on my 9000-Radio project.",
-            projectsTitle: "Projects",
-            project1Title: "Gaming Website",
-            project1Desc: "A collection of my small game projects and experiments.",
-            projectLink: "View Demo",
-            project2Title: "9000-Radio",
-            project2Desc: "A web radio project for discovering and listening to music.",
-            project3Title: "This Profile",
-            project3Desc: "The page you're currently viewing! Built with HTML, CSS, and Vanilla JS.",
-            projectRepoLink: "View Repository",
-            contactTitle: "Contact",
-            contactText: "The best way to reach me is via Discord, or check out my other profiles!",
-            prevCardLabel: "Previous Card",
-            nextCardLabel: "Next Card",
-            goToCardLabel: "Go to card" // Will be appended with number in JS
+            timestampPrefix: "for"
         }
     };
+    let currentLanguage = 'de'; // Standard Sprache
 
-    // --- DOM-Elemente ---
-    const loader = document.getElementById('loader');
-    const bodyElement = document.body;
-    // Profilkarte & Inhalte (jetzt innerhalb von .card#card-profile)
-    const profileCardElement = document.getElementById('card-profile'); // Die Profilkarte selbst
+    // === Hintergrund-Logik ===
+    const backgroundImageUrl = 'background.jpg';
+    const imageTester = new Image();
+    imageTester.onload = function() { bodyElement.classList.add('image-background'); bodyElement.classList.remove('gradient-background'); };
+    imageTester.onerror = function() { bodyElement.classList.add('gradient-background'); bodyElement.classList.remove('image-background'); };
+    imageTester.src = backgroundImageUrl;
+
+    // --- Elemente zum Update (Discord-bezogen) ---
     const profilePicture = document.getElementById('profile-picture');
     const avatarDecoration = document.getElementById('avatar-decoration');
     const usernameElement = document.getElementById('username');
@@ -104,298 +70,326 @@ document.addEventListener('DOMContentLoaded', () => {
     const activityTimeElement = document.getElementById('activity-time');
     const activityButtonsContainer = document.getElementById('activity-buttons');
     const statusIndicator = document.getElementById('status-indicator');
-    const errorMessageElement = profileCardElement.querySelector('#error-message'); // Fehler in der Profilkarte
 
-    // Musik & Lautstärke
+    // --- Music Player Elemente ---
     const audioElement = document.getElementById('audio-player');
     const playPauseButton = document.getElementById('play-pause-btn');
     const progressBar = document.getElementById('progress-bar');
     const progressElement = document.getElementById('progress');
     const currentTimeElement = document.getElementById('time-current');
     const totalTimeElement = document.getElementById('time-total');
+
+    // --- Lautstärke Elemente ---
     const volumeControlContainer = document.getElementById('volume-control-container');
     const volumeIconDisplay = document.getElementById('volume-icon-display');
     const volumeSlider = document.getElementById('volume-slider');
     let lastVolume = audioElement.volume;
 
-    // Sprache
+    // --- Sprachumschalter Elemente ---
     const langDeButton = document.getElementById('lang-de');
     const langEnButton = document.getElementById('lang-en');
 
-    // Kartenstapel Elemente
-    const cardStackContainer = document.querySelector('.card-stack-container');
-    const cards = Array.from(cardStackContainer.querySelectorAll('.card'));
-    const prevCardButton = document.getElementById('prev-card');
-    const nextCardButton = document.getElementById('next-card');
-    const cardNavigationContainer = document.querySelector('.card-navigation'); // Container für Navi
-    const cardDotsContainer = cardNavigationContainer.querySelector('.card-dots');
-    let cardDots = [];
-    let currentCardIndex = 0;
-    let touchStartX = 0, touchStartY = 0, touchEndX = 0, touchEndY = 0;
-    let isSwiping = false;
-    const swipeThreshold = 50;
+    // Globale Variable zum Speichern der letzten Lanyard-Daten
+    let lastFetchedUserData = null;
 
-    // === Kartenstapel Logik ===
-    function initializeDots() {
-        cardDotsContainer.innerHTML = '';
-        cardDots = [];
-        cards.forEach((_, index) => {
-            const dot = document.createElement('button');
-            dot.classList.add('dot');
-            dot.dataset.index = index;
-             // Aria-Label wird in setLanguage gesetzt
-            dot.addEventListener('click', () => showCardByIndex(index));
-            cardDotsContainer.appendChild(dot);
-            cardDots.push(dot);
-        });
-    }
-
-    function showCardByIndex(index) {
-        if (index < 0 || index >= cards.length || index === currentCardIndex) {
-            return; // Ungültiger Index oder keine Änderung
-        }
-
-        currentCardIndex = index;
-
-        cards.forEach((card, i) => {
-            card.classList.remove('active', 'prev', 'next', 'hidden');
-            if (i === currentCardIndex) card.classList.add('active');
-            else if (i === currentCardIndex - 1) card.classList.add('prev');
-            else if (i === currentCardIndex + 1) card.classList.add('next');
-            else { card.classList.add('hidden'); if (i < currentCardIndex) card.classList.add('prev'); }
-        });
-
-        prevCardButton.disabled = currentCardIndex === 0;
-        nextCardButton.disabled = currentCardIndex === cards.length - 1;
-
-        cardDots.forEach((dot, i) => dot.classList.toggle('active', i === currentCardIndex));
-    }
+    let refreshInterval;
 
     // === Sprachumschaltfunktion ===
     function setLanguage(lang) {
-        if (!translations[lang]) return;
+        if (!translations[lang]) {
+            console.warn(`Sprache "${lang}" nicht gefunden.`);
+            return;
+        }
         currentLanguage = lang;
-        localStorage.setItem('preferredLanguage', lang);
-        document.documentElement.lang = lang;
+        localStorage.setItem('preferredLanguage', lang); // Präferenz speichern
+        document.documentElement.lang = lang; // Setzt lang-Attribut des HTML-Tags
 
+        // Aktualisiere alle Elemente mit data-translate Attribut
         document.querySelectorAll('[data-translate]').forEach(el => {
             const key = el.getAttribute('data-translate');
-            if (translations[lang][key]) el.textContent = translations[lang][key];
-        });
-        document.querySelectorAll('[data-translate-title]').forEach(el => {
-            const key = el.getAttribute('data-translate-title');
-            if (translations[lang][key]) el.title = translations[lang][key];
+            if (translations[lang][key]) {
+                el.textContent = translations[lang][key];
+            }
         });
 
+        // Aktualisiere alle Elemente mit data-translate-title Attribut
+        document.querySelectorAll('[data-translate-title]').forEach(el => {
+            const key = el.getAttribute('data-translate-title');
+            if (translations[lang][key]) {
+                el.title = translations[lang][key];
+            }
+        });
+
+        // Aktualisiere Seitentitel
         document.title = translations[lang].pageTitle;
+
+        // Markiere aktiven Sprachbutton
         langDeButton.classList.toggle('active', lang === 'de');
         langEnButton.classList.toggle('active', lang === 'en');
 
-        // Update Aria-Labels der Navi-Elemente
-        prevCardButton.setAttribute('aria-label', translations[lang].prevCardLabel);
-        nextCardButton.setAttribute('aria-label', translations[lang].nextCardLabel);
-        cardDots.forEach((dot, index) => {
-            dot.setAttribute('aria-label', `${translations[lang].goToCardLabel} ${index + 1}`);
-        });
-
-
+        // Aktualisiere dynamische Texte, falls API-Daten schon da sind
         if (lastFetchedUserData) {
-           updateDynamicTexts(lastFetchedUserData);
+           updateDynamicTexts(lastFetchedUserData); // Aktualisiere nur sprachabhängige Texte
         }
+
+        // Setze initialen Tooltip für Copy-Button neu
         copyUsernameButton.title = translations[currentLanguage].copyTooltip;
     }
 
     // === Hilfsfunktion zum Aktualisieren sprachabhängiger dynamischer Texte ===
-    function updateDynamicTexts(userData) { /* ... (wie zuvor) ... */ }
+    // (Wird aufgerufen, wenn Sprache wechselt UND Daten vorhanden sind)
+    function updateDynamicTexts(userData) {
+        const user = userData.discord_user;
+        const status = userData.discord_status;
+        const activities = userData.activities;
 
-    // === Hintergrund-Logik ===
-     /* ... (wie zuvor) ... */
+        // Bio aktualisieren
+        const displayName = user.global_name || user.username;
+        bioElement.textContent = `${translations[currentLanguage].bioPrefix} ${displayName}`;
 
-    // --- Initial Fetch Function (Lanyard) ---
+        // Aktivitätstext aktualisieren (wenn keine Aktivität)
+        let primaryActivity = activities.find(act => act.type !== 4) || activities.find(act => act.type === 4) || null;
+         if (!primaryActivity) {
+            if (status === 'offline') {
+                activityDetailsElement.textContent = translations[currentLanguage].activityOffline;
+            } else {
+                activityDetailsElement.textContent = translations[currentLanguage].activityDoingNothing;
+            }
+             activityStateElement.style.display = 'none';
+             activityTimeElement.style.display = 'none';
+         } else {
+             // Timestamp Prefix aktualisieren, falls vorhanden
+             if (primaryActivity.timestamps?.start) {
+                 activityTimeElement.textContent = `${translations[currentLanguage].timestampPrefix} ${formatDuration(primaryActivity.timestamps.start)}`;
+                 activityTimeElement.style.display = 'block';
+             } else {
+                 activityTimeElement.style.display = 'none';
+             }
+             // Details/State werden in updateProfile sowieso gesetzt
+         }
+    }
+
+
+    // --- Initial Fetch Function ---
     const fetchData = () => {
         console.log("Fetching new data...");
-         // Nur Lade-Text der Profilkarte aktualisieren, wenn diese aktiv ist
-        if (cards[currentCardIndex]?.id === 'card-profile') {
-            errorMessageElement.textContent = '';
-            activityDetailsElement.textContent = translations[currentLanguage].activityLoading;
-            activityStateElement.textContent = '';
-            activityTimeElement.textContent = '';
-            activityButtonsContainer.innerHTML = '';
-        }
+        errorMessageElement.textContent = '';
+        // Setze initialen Lade-Text in aktueller Sprache
+        activityDetailsElement.textContent = translations[currentLanguage].activityLoading;
+        activityStateElement.textContent = '';
+        activityTimeElement.textContent = '';
+        activityButtonsContainer.innerHTML = ''; // Buttons leeren
+
 
         fetch(apiUrl)
             .then(response => response.ok ? response.json() : Promise.reject(new Error(`HTTP error! Status: ${response.status}`)))
             .then(data => {
                 if (data.success && data.data) {
-                    lastFetchedUserData = data.data;
-                     // Nur Profilkarte aktualisieren, wenn sie aktiv ist
-                    if (cards[currentCardIndex]?.id === 'card-profile') {
-                         updateProfile(data.data);
-                    }
-                    // Sichtbarkeit des Stacks wird nach dem ersten Laden gesetzt
-                    if (cardStackContainer.style.visibility === 'hidden') {
-                        hideLoaderAndShowStack();
-                    }
+                    lastFetchedUserData = data.data; // Speichere Daten global für Sprachwechsel
+                    updateProfile(data.data); // Rendere mit aktueller Sprache
+                    if (!profileCard.classList.contains('visible')) showCard();
                 } else {
-                    lastFetchedUserData = null;
+                    lastFetchedUserData = null; // Lösche alte Daten bei Fehler
                     throw new Error('API did not return success or data is missing.');
                 }
             })
             .catch(error => {
                 console.error('Error fetching Discord data:', error);
-                lastFetchedUserData = null;
-                if (cards[currentCardIndex]?.id === 'card-profile') {
-                     displayError(error.message);
-                     activityDetailsElement.textContent = translations[currentLanguage].errorPrefix; // Fehler anzeigen
-                }
-                 if (cardStackContainer.style.visibility === 'hidden') {
-                        hideLoaderAndShowStack(); // Stack trotzdem anzeigen
-                    }
+                lastFetchedUserData = null; // Lösche alte Daten bei Fehler
+                displayError(error.message); // Error-Funktion kümmert sich um Sprache
+                if (!profileCard.classList.contains('visible')) showCard();
+                // Setze Aktivität auf Fehler oder Standard
+                activityDetailsElement.textContent = translations[currentLanguage].errorPrefix;
             });
     };
 
-    // --- Funktion zum Ausblenden des Loaders und Anzeigen des Kartenstapels ---
-    const hideLoaderAndShowStack = () => {
+    // --- Function to Show Card with Animation ---
+    const showCard = () => {
         loader.style.opacity = '0';
         setTimeout(() => {
             loader.style.display = 'none';
-            cardStackContainer.style.visibility = 'visible'; // Kartenstapel sichtbar machen
-            showCardByIndex(0); // Zeige die erste Karte explizit nach dem Laden
+            profileCard.style.visibility = 'visible';
+            profileCard.classList.add('visible');
         }, 500);
     };
 
 
-    // --- Function to Update DOM Elements (Discord Part, IN der Profilkarte) ---
+    // --- Function to Update DOM Elements (Discord Part) ---
     function updateProfile(userData) {
-        // Nur ausführen, wenn die Profilkarte existiert und Daten da sind
-        if (!profileCardElement || !userData) return;
-
         const user = userData.discord_user;
         const activities = userData.activities;
         const status = userData.discord_status;
 
-        // Favicon setzen
-        if (user && user.id && user.avatar) { /* ... Favicon Code wie zuvor ... */ }
+        // --- Setze das Favicon dynamisch --- (Korrekter Platz!)
+        if (user && user.id && user.avatar) {
+            const faviconExtension = 'png';
+            const faviconSize = 64;
+            const faviconUrl = `https://cdn.discordapp.com/avatars/${user.id}/${user.avatar}.${faviconExtension}?size=${faviconSize}`;
+            let link = document.querySelector("link[rel~='icon']");
+            if (!link) {
+                link = document.createElement('link');
+                link.rel = 'icon';
+                link.type = 'image/png';
+                document.head.appendChild(link);
+            }
+            link.href = faviconUrl;
+        }
+        // --- Ende Favicon setzen ---
 
-        // Profilkarten-spezifische Elemente aktualisieren
+
+        // PFP and Username (nicht sprachabhängig)
         const pfpUrl = `https://cdn.discordapp.com/avatars/${user.id}/${user.avatar}.${user.avatar.startsWith('a_') ? 'gif' : 'png'}?size=256`;
         profilePicture.src = pfpUrl;
         statusPfp.src = pfpUrl;
         const displayName = user.global_name || user.username;
         usernameElement.textContent = displayName;
 
-        if (avatarDecoration && user.avatar_decoration_data?.asset) { /* ... Deko Code ... */ }
-        else if (avatarDecoration) { avatarDecoration.style.display = 'none'; }
+        // Avatar Decoration
+        if (avatarDecoration && user.avatar_decoration_data?.asset) {
+             const decorationUrl = `https://cdn.discordapp.com/avatar-decorations/${user.id}/${user.avatar_decoration_data.asset}.png?size=160`;
+             avatarDecoration.src = decorationUrl;
+             avatarDecoration.style.display = 'block';
+        } else if (avatarDecoration) {
+            avatarDecoration.style.display = 'none';
+        }
 
+        // Bio (sprachabhängig)
         bioElement.textContent = `${translations[currentLanguage].bioPrefix} ${displayName}`;
 
+        // Discord Username (nicht sprachabhängig) & Copy Button (Tooltip ist sprachabhängig, wird von setLanguage gesetzt)
         const fullUsername = user.discriminator === "0" ? user.username : `${user.username}#${user.discriminator}`;
         discordUserElement.textContent = fullUsername;
         copyUsernameButton.dataset.username = fullUsername;
 
+        // Status Indicator (nicht sprachabhängig)
         statusIndicator.className = `status-dot ${status}`;
         statusIndicator.classList.remove('pulse-online', 'pulse-dnd');
         if (status === 'online') statusIndicator.classList.add('pulse-online');
         else if (status === 'dnd') statusIndicator.classList.add('pulse-dnd');
 
-        // Activity
+        // Activity (Details/State sind nicht sprachabhängig, aber die Standardtexte schon)
         let primaryActivity = activities.find(act => act.type !== 4) || activities.find(act => act.type === 4) || null;
         activityButtonsContainer.innerHTML = '';
-        activityStateElement.textContent = '';
-        activityTimeElement.textContent = '';
+        activityStateElement.textContent = ''; // Reset
+        activityTimeElement.textContent = ''; // Reset
 
         if (primaryActivity) {
-            let detailsText = ''; let stateText = '';
-            if (primaryActivity.type === 4 && primaryActivity.state) { detailsText = primaryActivity.state; if (primaryActivity.emoji?.name) detailsText = `${primaryActivity.emoji.name} ${detailsText}`; }
-            else { detailsText = primaryActivity.name || ''; if (primaryActivity.details) stateText = primaryActivity.details; if (primaryActivity.state) { if (stateText && primaryActivity.state !== stateText) stateText += ` | ${primaryActivity.state}`; else if (!stateText) stateText = primaryActivity.state; } }
+            let detailsText = '';
+            let stateText = '';
+             if (primaryActivity.type === 4 && primaryActivity.state) { detailsText = primaryActivity.state; if (primaryActivity.emoji?.name) detailsText = `${primaryActivity.emoji.name} ${detailsText}`; }
+             else { detailsText = primaryActivity.name || ''; if (primaryActivity.details) stateText = primaryActivity.details; if (primaryActivity.state) { if (stateText && primaryActivity.state !== stateText) stateText += ` | ${primaryActivity.state}`; else if (!stateText) stateText = primaryActivity.state; } }
 
-            activityDetailsElement.textContent = detailsText || '...';
+            activityDetailsElement.textContent = detailsText || '...'; // Fallback
             activityStateElement.textContent = stateText;
             activityStateElement.style.display = stateText ? 'block' : 'none';
 
+            // Timestamp (sprachabhängig)
             if (primaryActivity.timestamps?.start) {
                 activityTimeElement.textContent = `${translations[currentLanguage].timestampPrefix} ${formatDuration(primaryActivity.timestamps.start)}`;
-                activityTimeElement.style.display = 'block';
-            } else { activityTimeElement.style.display = 'none'; }
+                 activityTimeElement.style.display = 'block';
+            } else {
+                 activityTimeElement.style.display = 'none';
+            }
 
-            if (primaryActivity.buttons && primaryActivity.buttons.length > 0) { /* ... Button Code ... */ }
+            // Buttons (nicht sprachabhängig)
+            if (primaryActivity.buttons && primaryActivity.buttons.length > 0) {
+                 primaryActivity.buttons.forEach(buttonLabel => {
+                    const buttonElement = document.createElement('span');
+                    buttonElement.classList.add('activity-button');
+                    buttonElement.textContent = buttonLabel;
+                    activityButtonsContainer.appendChild(buttonElement);
+                });
+            }
 
         } else {
-            if (status === 'offline') { activityDetailsElement.textContent = translations[currentLanguage].activityOffline; }
-            else { activityDetailsElement.textContent = translations[currentLanguage].activityDoingNothing; }
+            // Keine Aktivität (sprachabhängig)
+            if (status === 'offline') {
+                activityDetailsElement.textContent = translations[currentLanguage].activityOffline;
+            } else {
+                activityDetailsElement.textContent = translations[currentLanguage].activityDoingNothing;
+            }
             activityStateElement.style.display = 'none';
             activityTimeElement.style.display = 'none';
         }
     }
 
-    // --- Helper Functions (formatDuration, formatTime, displayError) ---
-    function formatDuration(startTime) { /* ... (wie zuvor) ... */ }
-    function formatTime(seconds) { /* ... (wie zuvor) ... */ }
-    function displayError(message) {
-         if (errorMessageElement) { // Nur wenn Element existiert
-             errorMessageElement.textContent = `${translations[currentLanguage].errorPrefix} ${message} ${translations[currentLanguage].errorRetry}`;
-         }
+    // --- Helper Function to Format Duration ---
+    function formatDuration(startTime) {
+        const now = Date.now();
+        const diffSeconds = Math.floor((now - startTime) / 1000);
+        if (diffSeconds < 60) return `${diffSeconds} Sek.`;
+        const diffMinutes = Math.floor(diffSeconds / 60);
+        if (diffMinutes < 60) return `${diffMinutes} Min.`;
+        const diffHours = Math.floor(diffMinutes / 60);
+        const remainingMinutes = diffMinutes % 60;
+        if (remainingMinutes === 0) return `${diffHours} Std.`;
+        return `${diffHours} Std. ${remainingMinutes} Min.`;
     }
 
-    // --- Event Listener (Copy, Music, Volume) ---
-    copyUsernameButton?.addEventListener('click', () => { /* ... (wie zuvor, mit Sprachunterstützung) ... */ });
-    // Music Player Logic...
-    function togglePlayPause() { /* ... */ }
-    function updatePlayPauseIcon() { /* ... */ }
-    function updateProgress() { /* ... */ }
-    function setProgress(e) { /* ... */ }
-    playPauseButton?.addEventListener('click', togglePlayPause);
-    audioElement?.addEventListener('play', updatePlayPauseIcon);
-    audioElement?.addEventListener('pause', updatePlayPauseIcon);
-    audioElement?.addEventListener('ended', updatePlayPauseIcon);
-    audioElement?.addEventListener('loadedmetadata', () => { /* ... (wie zuvor, inkl. Volume-Init) ... */ });
-    audioElement?.addEventListener('timeupdate', updateProgress);
-    progressBar?.addEventListener('click', setProgress);
-    // Volume Control Logic...
-    function updateVolumeIcon(volume) { /* ... */ }
-    volumeSlider?.addEventListener('input', (e) => { /* ... */ });
-    volumeIconDisplay?.addEventListener('click', () => { /* ... */ });
-    audioElement?.addEventListener('volumechange', () => { /* ... */ });
+    // --- Helper Function to Format Time (MM:SS) ---
+    function formatTime(seconds) {
+        const minutes = Math.floor(seconds / 60);
+        const secs = Math.floor(seconds % 60);
+        return `${minutes}:${secs < 10 ? '0' : ''}${secs}`;
+    }
 
-    // --- Event Listener für Karten-Navigation ---
-    prevCardButton?.addEventListener('click', () => showCardByIndex(currentCardIndex - 1));
-    nextCardButton?.addEventListener('click', () => showCardByIndex(currentCardIndex + 1));
 
-    // --- Event Listener für Touch/Swipe ---
-    cardStackContainer?.addEventListener('touchstart', (e) => {
-        if (e.target === cardStackContainer || cards.includes(e.target.closest('.card'))) {
-            touchStartX = e.changedTouches[0].screenX; touchStartY = e.changedTouches[0].screenY; isSwiping = true;
-        } else { isSwiping = false; }
-    }, { passive: true });
-    cardStackContainer?.addEventListener('touchmove', (e) => { if (!isSwiping) return; }, { passive: true });
-    cardStackContainer?.addEventListener('touchend', (e) => {
-        if (!isSwiping) return;
-        touchEndX = e.changedTouches[0].screenX; touchEndY = e.changedTouches[0].screenY;
-        const deltaX = touchEndX - touchStartX; const deltaY = touchEndY - touchStartY;
-        // Swipe nach links/rechts ist dominant und über Schwelle?
-        if (Math.abs(deltaX) > swipeThreshold && Math.abs(deltaX) > Math.abs(deltaY) * 1.5) {
-             // e.preventDefault(); // Nur wenn nötig, um Scrollen zu verhindern
-            showCardByIndex(currentCardIndex + (deltaX < 0 ? 1 : -1)); // Nächste/Vorherige
-        }
-        isSwiping = false;
+    // --- Function to Display Errors ---
+    function displayError(message) {
+        errorMessageElement.textContent = `${translations[currentLanguage].errorPrefix} ${message} ${translations[currentLanguage].errorRetry}`;
+    }
+
+    // --- Event Listener for Copy Username ---
+    copyUsernameButton.addEventListener('click', () => {
+        const usernameToCopy = copyUsernameButton.dataset.username;
+        if (!usernameToCopy) return;
+        navigator.clipboard.writeText(usernameToCopy).then(() => {
+            const originalTitle = copyUsernameButton.title;
+            copyUsernameButton.title = translations[currentLanguage].copySuccess;
+            copyUsernameButton.classList.add('copied');
+            setTimeout(() => {
+                copyUsernameButton.classList.remove('copied');
+                copyUsernameButton.title = translations[currentLanguage].copyTooltip; // Setze Tooltip in aktueller Sprache zurück
+            }, 1500);
+        }).catch(err => {
+            console.error('Kopieren fehlgeschlagen:', err);
+            const originalTitle = copyUsernameButton.title;
+            copyUsernameButton.title = translations[currentLanguage].copyError;
+            setTimeout(() => { copyUsernameButton.title = translations[currentLanguage].copyTooltip; }, 1500);
+        });
     });
+
+    // --- === Music Player Logic === ---
+    function togglePlayPause() { if (audioElement.paused || audioElement.ended) { audioElement.play().catch(error => console.error("Fehler beim Abspielen:", error)); } else { audioElement.pause(); } }
+    function updatePlayPauseIcon() { if (audioElement.paused || audioElement.ended) { playPauseButton.classList.remove('fa-pause'); playPauseButton.classList.add('fa-play'); } else { playPauseButton.classList.remove('fa-play'); playPauseButton.classList.add('fa-pause'); } }
+    function updateProgress() { if (audioElement.duration) { const progressPercent = (audioElement.currentTime / audioElement.duration) * 100; progressElement.style.width = `${progressPercent}%`; currentTimeElement.textContent = formatTime(audioElement.currentTime); } else { progressElement.style.width = '0%'; currentTimeElement.textContent = formatTime(0); } }
+    function setProgress(e) { const width = progressBar.clientWidth; const clickX = e.offsetX; const duration = audioElement.duration; if (duration) audioElement.currentTime = (clickX / width) * duration; }
+    playPauseButton.addEventListener('click', togglePlayPause);
+    audioElement.addEventListener('play', updatePlayPauseIcon);
+    audioElement.addEventListener('pause', updatePlayPauseIcon);
+    audioElement.addEventListener('ended', updatePlayPauseIcon);
+    audioElement.addEventListener('loadedmetadata', () => { totalTimeElement.textContent = formatTime(audioElement.duration); updateProgress(); const initialVolume = audioElement.volume; volumeSlider.value = initialVolume; lastVolume = initialVolume; updateVolumeIcon(initialVolume); });
+    audioElement.addEventListener('timeupdate', updateProgress);
+    progressBar.addEventListener('click', setProgress);
+
+    // --- === Volume Control Logic === ---
+    function updateVolumeIcon(volume) { volumeIconDisplay.classList.remove('fa-volume-high', 'fa-volume-low', 'fa-volume-off'); if (audioElement.muted || volume === 0) { volumeIconDisplay.classList.add('fa-volume-off'); } else if (volume < 0.5) { volumeIconDisplay.classList.add('fa-volume-low'); } else { volumeIconDisplay.classList.add('fa-volume-high'); } }
+    volumeSlider.addEventListener('input', (e) => { const newVolume = parseFloat(e.target.value); audioElement.volume = newVolume; if (audioElement.muted && newVolume > 0) { audioElement.muted = false; } lastVolume = newVolume; updateVolumeIcon(newVolume); });
+    volumeIconDisplay.addEventListener('click', () => { if (audioElement.muted) { audioElement.muted = false; audioElement.volume = lastVolume; volumeSlider.value = lastVolume; updateVolumeIcon(lastVolume); } else { lastVolume = audioElement.volume; audioElement.muted = true; volumeSlider.value = 0; updateVolumeIcon(0); } });
+    audioElement.addEventListener('volumechange', () => { if (!audioElement.muted) { volumeSlider.value = audioElement.volume; updateVolumeIcon(audioElement.volume); } else { volumeSlider.value = 0; updateVolumeIcon(0); } });
 
 
     // --- Initialisierung ---
-    initializeDots(); // Punkte für Navigation erstellen
-    // Sprache beim Laden setzen (bevor Texte gesetzt werden)
+    // Sprache beim Laden setzen
     const preferredLanguage = localStorage.getItem('preferredLanguage');
-    setLanguage(preferredLanguage && translations[preferredLanguage] ? preferredLanguage : 'de');
+    setLanguage(preferredLanguage && translations[preferredLanguage] ? preferredLanguage : 'de'); // Setze bevorzugte oder Standard
 
     // Event Listener für Sprachbuttons
-    langDeButton?.addEventListener('click', () => setLanguage('de'));
-    langEnButton?.addEventListener('click', () => setLanguage('en'));
+    langDeButton.addEventListener('click', () => setLanguage('de'));
+    langEnButton.addEventListener('click', () => setLanguage('en'));
 
-    // Erste Daten laden (zeigt Loader, blendet Stack ein, wenn fertig)
+    // Erste Daten laden und Refresh-Timer starten
     fetchData();
-
-    // Refresh-Timer starten
     if (refreshInterval) clearInterval(refreshInterval);
-    refreshInterval = setInterval(fetchData, 30000);
-
+    refreshInterval = setInterval(fetchData, 30000); // Refresh Discord data every 30 seconds
 });
