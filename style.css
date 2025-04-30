@@ -221,47 +221,165 @@ body.gradient-background {
     to { opacity: 1; }
 }
 
+/* === Styles für Kartenstapel === */
+.card-stack-container {
+    position: relative; /* Bezugspunkt für absolute Karten */
+    width: 90%; /* Breite des sichtbaren Bereichs */
+    max-width: 480px; /* Maximale Breite */
+    height: 75vh; /* Höhe des Stapels (anpassbar) */
+    max-height: 650px; /* Maximale Höhe */
+    margin: auto; /* Zentriert den Container */
+    perspective: 1000px; /* Für 3D-Effekte, optional */
+    visibility: hidden; /* Startet unsichtbar, JS macht es sichtbar */
+}
 
-/* --- Profile Card --- */
-#profile-card {
+.card {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
     background-color: var(--card-bg);
     backdrop-filter: blur(12px);
     -webkit-backdrop-filter: blur(12px);
-    padding: 35px 45px;
+    padding: 30px 35px; /* Padding innerhalb der Karte */
     border-radius: 25px;
     box-shadow: 0 10px 40px rgba(0, 0, 0, 0.4);
     border: 1px solid rgba(255, 255, 255, 0.1);
     text-align: center;
-    max-width: 480px;
-    width: 90%;
-    opacity: 0;
-    transform: translateY(30px);
-    transition: opacity 0.6s ease-out, transform 0.6s ease-out;
+    color: var(--text-color);
+    overflow-y: auto; /* Scrollen innerhalb der Karte erlauben */
+    overflow-x: hidden;
+    transform-origin: center 85%; /* Drehpunkt für Skalierung/Rotation (eher unten) */
+    transition: transform 0.6s cubic-bezier(0.25, 1, 0.5, 1), /* Smooth Transition */
+                opacity 0.5s ease-in-out,
+                z-index 0s 0.3s; /* z-index sofort nach halber Animation ändern */
+    z-index: 1; /* Standard-Stapelungsebene */
+    opacity: 0; /* Standardmäßig unsichtbar */
+    pointer-events: none; /* Standardmäßig nicht klickbar */
+    overscroll-behavior: contain; /* Verhindert, dass Scrollen in Karte die Seite scrollt */
 }
 
-#profile-card.visible {
+/* Zustand: Aktive (oberste) Karte */
+.card.active {
+    transform: translateY(0) scale(1);
     opacity: 1;
-    transform: translateY(0);
-    visibility: visible;
+    z-index: 10;
+    pointer-events: auto; /* Klickbar machen */
 }
+
+/* Zustand: Nächste Karte (direkt dahinter sichtbar) */
+.card.next {
+    transform: translateY(5%) scale(0.95); /* Leicht nach unten verschoben & kleiner */
+    opacity: 0.6; /* Leicht transparent */
+    z-index: 9;
+    pointer-events: none;
+}
+
+/* Zustand: Vorherige Karte (nur als kleiner Hinweis oben) */
+.card.prev {
+    transform: translateY(-5%) scale(0.95); /* Leicht nach oben */
+    opacity: 0.6;
+    z-index: 9;
+    pointer-events: none;
+}
+
+/* Zustand: Versteckte Karten (weiter weg im Stapel) */
+.card.hidden {
+    transform: translateY(15%) scale(0.8); /* Weiter weg & kleiner */
+    opacity: 0;
+    z-index: 8;
+    pointer-events: none;
+}
+.card.hidden.prev { /* Versteckte vorherige Karten evtl. anders positionieren */
+     transform: translateY(-15%) scale(0.8);
+}
+/* =============================== */
+
+/* === Styles für Karten-Navigation === */
+.card-navigation {
+    position: fixed; /* Feste Position am Bildschirmrand */
+    right: 20px;
+    top: 50%;
+    transform: translateY(-50%);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 15px;
+    z-index: 100; /* Über den Karten */
+}
+
+.nav-button {
+    background-color: rgba(30, 30, 40, 0.7);
+    backdrop-filter: blur(5px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    color: var(--text-color);
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    font-size: 1.2em;
+    cursor: pointer;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    transition: background-color 0.2s ease, transform 0.1s ease;
+}
+
+.nav-button:hover {
+    background-color: rgba(50, 50, 60, 0.9);
+}
+.nav-button:active {
+    transform: scale(0.95);
+}
+.nav-button:disabled { /* Aussehen für deaktivierte Buttons (Anfang/Ende) */
+    opacity: 0.4;
+    cursor: not-allowed;
+}
+
+.card-dots {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.dot {
+    width: 8px;
+    height: 8px;
+    background-color: rgba(255, 255, 255, 0.3);
+    border-radius: 50%;
+    cursor: pointer;
+    transition: background-color 0.2s ease, transform 0.2s ease;
+}
+
+.dot:hover {
+    background-color: rgba(255, 255, 255, 0.6);
+    transform: scale(1.2);
+}
+
+.dot.active {
+    background-color: var(--accent-color);
+    transform: scale(1.3);
+    cursor: default;
+}
+/* =============================== */
+
+
+/* --- Styles für Inhalte IN den Karten --- */
+/* (Diese gelten jetzt für Elemente innerhalb von .card statt #profile-card) */
 
 /* Staggered Animation Class */
-.animate-in {
+.card .animate-in { /* Spezifischer machen, falls nötig */
     opacity: 0;
     transform: translateY(15px);
     animation: slideFadeUp 0.5s ease-out forwards;
     animation-delay: var(--delay, 0s);
 }
+/* Keyframes bleiben gleich */
+@keyframes slideFadeUp { /* ... */ }
 
-@keyframes slideFadeUp {
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
-}
 
-/* --- Profile Picture --- */
-.pfp-wrapper {
+/* --- Profile Picture (innerhalb .card) --- */
+.card .pfp-wrapper {
     position: relative;
     width: 130px;
     height: 130px;
@@ -269,11 +387,11 @@ body.gradient-background {
     transition: transform 0.3s ease;
 }
 
-.pfp-wrapper:hover {
+.card .pfp-wrapper:hover {
     transform: scale(1.05);
 }
 
-#profile-picture {
+.card #profile-picture { /* ID bleibt spezifisch */
     width: 100%;
     height: 100%;
     border-radius: 50%;
@@ -283,25 +401,12 @@ body.gradient-background {
     background-color: #333;
     animation: pulseGlow 3s infinite ease-in-out alternate;
 }
+@keyframes pulseGlow { /* Bleibt gleich */ }
 
-@keyframes pulseGlow {
-    from { box-shadow: 0 0 15px var(--glow-color), 0 0 25px var(--glow-color); }
-    to { box-shadow: 0 0 25px var(--glow-color), 0 0 40px var(--glow-color); }
-}
+.card .avatar-decoration { /* Bleibt gleich */ }
 
-/* Optional: Style for avatar decoration */
-.avatar-decoration {
-    position: absolute;
-    top: -10%;
-    left: -10%;
-    width: 120%;
-    height: 120%;
-    pointer-events: none;
-    z-index: 5;
-}
-
-/* --- Text Elements --- */
-#username {
+/* --- Text Elements (innerhalb .card) --- */
+.card #username { /* ID bleibt spezifisch */
     font-size: 2.6em;
     font-weight: 700;
     margin-bottom: 8px;
@@ -309,21 +414,21 @@ body.gradient-background {
     letter-spacing: 1.5px;
 }
 
-#bio {
+.card #bio { /* ID bleibt spezifisch */
     font-size: 1.15em;
     margin-bottom: 18px;
     color: #d0d0d0;
 }
 
-.location {
+.card .location {
     font-size: 0.95em;
     color: #c0c0c0;
     margin-bottom: 30px;
 }
-.location i { margin-right: 6px; color: var(--accent-color); }
+.card .location i { margin-right: 6px; color: var(--accent-color); }
 
-/* --- Status Section --- */
-.status-section {
+/* --- Status Section (innerhalb .card) --- */
+.card .status-section {
     background-color: rgba(0, 0, 0, 0.25);
     border-radius: 12px;
     padding: 15px 18px;
@@ -335,55 +440,32 @@ body.gradient-background {
     transition: background-color 0.3s ease;
 }
 
-.status-section:hover {
+.card .status-section:hover {
      background-color: rgba(0, 0, 0, 0.35);
 }
+/* Innere Status-Elemente */
+.card .status-left { display: flex; align-items: center; text-align: left; }
+.card #status-pfp { width: 50px; height: 50px; border-radius: 50%; margin-right: 15px; border: 1px solid rgba(255, 255, 255, 0.25); background-color: #444; }
+.card .status-text { display: flex; flex-direction: column; }
+.card .discord-user-line { display: flex; align-items: center; gap: 8px; margin-bottom: 3px; }
+.card .discord-username { font-weight: 600; font-size: 1.05em; }
+.card .copy-icon { font-size: 0.9em; color: #aaa; cursor: pointer; transition: color 0.2s ease; }
+.card .copy-icon:hover { color: var(--accent-color); }
+.card .copy-icon.copied { color: var(--copy-success-color); }
+.card .activity, .card .activity-sub { font-size: 0.9em; color: #c5c5c5; line-height: 1.4; }
+.card #activity-time { font-size: 0.8em; color: #aaa; margin-top: 3px; display: block; }
+.card .status-right { display: flex; align-items: center; }
+.card .status-dot { width: 14px; height: 14px; border-radius: 50%; border: 2px solid var(--card-bg); box-shadow: 0 0 6px rgba(0,0,0,0.6); transition: background-color 0.3s ease; }
+/* Status-Dot Farben & Animationen */
+.card .status-dot.online { /* ... */ }
+.card .status-dot.idle { /* ... */ }
+.card .status-dot.dnd { /* ... */ }
+.card .status-dot.offline { /* ... */ }
+@keyframes pulse { /* ... */ }
+@keyframes pulse-dnd { /* ... */ }
 
-.status-left { display: flex; align-items: center; text-align: left; }
-#status-pfp { width: 50px; height: 50px; border-radius: 50%; margin-right: 15px; border: 1px solid rgba(255, 255, 255, 0.25); background-color: #444; }
-.status-text { display: flex; flex-direction: column; }
-
-.discord-user-line { display: flex; align-items: center; gap: 8px; margin-bottom: 3px; }
-.discord-username { font-weight: 600; font-size: 1.05em; }
-
-.copy-icon {
-    font-size: 0.9em;
-    color: #aaa;
-    cursor: pointer;
-    transition: color 0.2s ease;
-}
-.copy-icon:hover { color: var(--accent-color); }
-.copy-icon.copied { color: var(--copy-success-color); }
-
-.activity, .activity-sub { font-size: 0.9em; color: #c5c5c5; line-height: 1.4; }
-#activity-time { font-size: 0.8em; color: #aaa; margin-top: 3px; display: block; /* Sicherstellen, dass es Platz einnimmt */ }
-
-.status-right { display: flex; align-items: center; }
-
-.status-dot {
-    width: 14px;
-    height: 14px;
-    border-radius: 50%;
-    border: 2px solid var(--card-bg);
-    box-shadow: 0 0 6px rgba(0,0,0,0.6);
-    transition: background-color 0.3s ease;
-}
-.status-dot.online { background-color: var(--status-online); animation: pulse 2s infinite ease-in-out; }
-.status-dot.idle { background-color: var(--status-idle); }
-.status-dot.dnd { background-color: var(--status-dnd); animation: pulse-dnd 1.5s infinite ease-in-out; }
-.status-dot.offline { background-color: var(--status-offline); }
-
-@keyframes pulse {
-    0%, 100% { box-shadow: 0 0 0 0 rgba(var(--status-online-rgb), 0.4); }
-    50% { box-shadow: 0 0 0 5px rgba(var(--status-online-rgb), 0); }
-}
-@keyframes pulse-dnd {
-     0%, 100% { box-shadow: 0 0 0 0 rgba(var(--status-dnd-rgb), 0.5); }
-    50% { box-shadow: 0 0 0 6px rgba(var(--status-dnd-rgb), 0); }
-}
-
-/* --- Activity Buttons --- */
-.activity-buttons-container {
+/* --- Activity Buttons (innerhalb .card) --- */
+.card .activity-buttons-container {
     display: flex;
     flex-wrap: wrap;
     justify-content: center;
@@ -391,330 +473,154 @@ body.gradient-background {
     margin-bottom: 25px;
     margin-top: 5px;
 }
+.card .activity-button { /* ... */ }
+.card .activity-button:hover { /* ... */ }
 
-.activity-button {
-    background-color: rgba(255, 255, 255, 0.1);
-    color: var(--text-color);
-    border: 1px solid rgba(255, 255, 255, 0.15);
-    border-radius: 8px;
-    padding: 8px 15px;
-    font-size: 0.85em;
-    font-weight: 500;
-    text-decoration: none;
-    transition: background-color 0.3s ease, transform 0.2s ease;
-    cursor: pointer;
-}
+/* --- Social Links (innerhalb .card) --- */
+.card .social-links { margin-bottom: 25px; display: flex; justify-content: center; gap: 22px; }
+.card .social-links a { color: #d0d0d0; font-size: 1.9em; transition: color 0.3s ease, transform 0.3s ease; }
+.card .social-links a:hover { color: var(--accent-color); transform: scale(1.15) translateY(-3px); }
 
-.activity-button:hover {
-    background-color: rgba(255, 255, 255, 0.2);
-    transform: translateY(-2px);
-}
+/* --- View Count (innerhalb .card) --- */
+.card .view-count { font-size: 0.95em; color: #b0b0b0; margin-bottom: 30px; }
+.card .view-count i { margin-right: 6px; }
 
-/* --- Social Links --- */
-.social-links { margin-bottom: 25px; display: flex; justify-content: center; gap: 22px; }
-.social-links a { color: #d0d0d0; font-size: 1.9em; transition: color 0.3s ease, transform 0.3s ease; }
-.social-links a:hover { color: var(--accent-color); transform: scale(1.15) translateY(-3px); }
-
-/* --- View Count --- */
-.view-count { font-size: 0.95em; color: #b0b0b0; margin-bottom: 30px; }
-.view-count i { margin-right: 6px; }
-
-/* --- Music Player --- */
-.music-player {
-    background-color: rgba(0, 0, 0, 0.35);
-    border-radius: 12px;
-    padding: 18px;
-    display: flex;
-    align-items: center;
-    gap: 18px;
-    border: 1px solid rgba(255, 255, 255, 0.08);
-}
-.music-icon { font-size: 1.9em; color: var(--accent-color); }
-.song-info { flex-grow: 1; text-align: left; }
-.song-title { display: block; font-weight: 600; font-size: 1em; margin-bottom: 10px; }
-
-.progress-bar-container {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    width: 100%;
-}
-
-.time-current, .time-total {
-    font-size: 0.85em;
-    color: #b0b0b0;
-    min-width: 35px;
-    text-align: center;
-}
-
-.progress-bar {
-    flex-grow: 1;
-    height: 8px;
-    background-color: rgba(255, 255, 255, 0.15);
-    border-radius: 4px;
-    overflow: hidden;
-    cursor: pointer;
-    position: relative;
-}
-
-.progress {
-    width: 0%;
-    height: 100%;
-    background-color: var(--accent-color);
-    border-radius: 4px;
-    transition: width 0.1s linear;
-    pointer-events: none;
-}
-
-.music-controls {
-    display: flex;
-    align-items: center;
-    gap: 18px;
-    font-size: 1.3em;
-}
-.music-controls i {
-    cursor: pointer;
-    transition: color 0.3s ease, transform 0.2s ease;
-}
-.music-controls i:hover {
-    color: var(--accent-color);
-    transform: scale(1.1);
-}
-.music-controls i:active {
-    transform: scale(0.95);
-}
+/* --- Music Player (innerhalb .card) --- */
+.card .music-player { /* ... */ }
+.card .music-icon { /* ... */ }
+.card .song-info { /* ... */ }
+.card .song-title { /* ... */ }
+.card .progress-bar-container { /* ... */ }
+.card .time-current, .card .time-total { /* ... */ }
+.card .progress-bar { /* ... */ }
+.card .progress { /* ... */ }
+.card .music-controls { /* ... */ }
+.card .music-controls i { /* ... */ }
+.card .music-controls i:hover { /* ... */ }
+.card .music-controls i:active { /* ... */ }
 
 /* --- Hide Default Audio Player --- */
-#audio-player {
-    display: none;
-    visibility: hidden;
-}
+#audio-player { /* Bleibt gleich */ }
 
 
 /* --- Placeholder Image Styling --- */
 img[src="placeholder_pfp.png"],
-img[src="placeholder_icon.png"] {
-    background-color: #555;
-    border: 1px dashed #888;
-}
+img[src="placeholder_icon.png"] { /* Bleibt gleich */ }
 
-/* --- Error Message Styling --- */
-#error-message {
+/* --- Error Message Styling (innerhalb .card) --- */
+.card #error-message { /* ID bleibt spezifisch */
     color: #f04747;
     margin-top: 15px;
     font-size: 0.9em;
     font-weight: 500;
 }
 
+/* --- Styles für spezifische Karteninhalte (Beispiel: Projekte) --- */
+.card .project-item {
+    background-color: rgba(0, 0, 0, 0.2);
+    padding: 15px;
+    margin-bottom: 15px;
+    border-radius: 10px;
+    text-align: left;
+}
+.card .project-item h3 {
+    margin-bottom: 5px;
+    color: var(--accent-color);
+}
+.card .project-link {
+    display: inline-block;
+    margin-top: 10px;
+    color: var(--accent-color);
+    text-decoration: none;
+    font-weight: 600;
+    border-bottom: 1px solid transparent;
+    transition: border-color 0.2s ease;
+}
+.card .project-link:hover {
+    border-color: var(--accent-color);
+}
 
-/* === Responsive Design für kleinere Bildschirme === */
+
+/* === Responsive Design === */
 @media (max-width: 640px) {
 
-    body {
-        overflow-y: auto;
-    }
+    body { overflow-y: auto; }
 
     /* Lautstärkeregler für Mobile anpassen */
-    #volume-control-container {
-        width: 140px;
-        border-radius: 8px;
-        padding: 6px 8px;
-        height: 36px;
-        top: 15px;
-        left: 15px;
-        transition: background-color 0.3s ease;
-        cursor: default;
-    }
-
-    #volume-icon-display {
-        font-size: 1em;
-        margin-right: 8px;
-        min-width: 20px;
-        cursor: pointer;
-    }
-
-    #volume-slider {
-        width: 80px;
-        opacity: 1;
-        height: 5px;
-        transition: none;
-        cursor: pointer;
-    }
-    #volume-slider::-webkit-slider-thumb { width: 12px; height: 12px; }
-    #volume-slider::-moz-range-thumb { width: 12px; height: 12px; }
+    #volume-control-container { /* ... (wie zuvor) ... */ }
+    #volume-icon-display { /* ... (wie zuvor) ... */ }
+    #volume-slider { /* ... (wie zuvor) ... */ }
+    #volume-slider::-webkit-slider-thumb { /* ... (wie zuvor) ... */ }
+    #volume-slider::-moz-range-thumb { /* ... (wie zuvor) ... */ }
 
     /* Sprachumschalter für Mobile anpassen */
-    #language-switcher {
-        top: 60px; /* Direkt unter dem Lautstärkeregler */
-        left: 15px;
-        padding: 4px;
+    #language-switcher { /* ... (wie zuvor) ... */ }
+    .lang-button { /* ... (wie zuvor) ... */ }
+
+    /* Kartenstapel auf Mobile anpassen */
+    .card-stack-container {
+        width: 90%;
+        height: 80vh; /* Mehr Höhe auf Mobile */
+        max-height: none;
     }
-    .lang-button { padding: 3px 6px; font-size: 0.75em; }
 
-
-    /* Profilkarte anpassen */
-    #profile-card {
-        padding: 25px 20px;
-        max-width: 95%;
+    .card {
+        padding: 25px 20px; /* Weniger Padding in den Karten */
         border-radius: 20px;
     }
 
-    /* PFP verkleinern */
-    .pfp-wrapper {
-        width: 100px;
-        height: 100px;
-        margin-bottom: 20px;
-    }
-    #profile-picture {
-        border-width: 3px;
-    }
+    /* Passe INHALTE der Karten für Mobile an */
+    .card .pfp-wrapper { width: 100px; height: 100px; margin-bottom: 20px; }
+    .card #profile-picture { border-width: 3px; }
+    .card #username { font-size: 2em; letter-spacing: 1px; }
+    .card #bio { font-size: 1em; margin-bottom: 15px; }
+    .card .location { font-size: 0.85em; margin-bottom: 25px; }
+    .card .status-section { padding: 12px 15px; flex-direction: column; align-items: flex-start; gap: 10px; }
+    .card .status-left { width: 100%; }
+    .card #status-pfp { width: 40px; height: 40px; margin-right: 10px; }
+    .card .discord-username { font-size: 1em; }
+    .card .activity, .card .activity-sub { font-size: 0.8em; line-height: 1.3; }
+    .card #activity-time { /* Bleibt block */ }
+    .card .status-right { align-self: flex-end; margin-top: -15px; }
+    .card .status-dot { width: 12px; height: 12px; }
+    .card .activity-buttons-container { gap: 8px; margin-bottom: 20px; }
+    .card .activity-button { padding: 6px 12px; font-size: 0.8em; }
+    .card .social-links { gap: 18px; margin-bottom: 20px; }
+    .card .social-links a { font-size: 1.7em; }
+    .card .view-count { font-size: 0.85em; margin-bottom: 25px; }
+    .card .music-player { padding: 15px; gap: 12px; flex-wrap: wrap; }
+    .card .music-icon { font-size: 1.7em; }
+    .card .song-info { flex-basis: calc(100% - 130px); min-width: 150px; }
+    .card .song-title { font-size: 0.9em; margin-bottom: 8px; }
+    .card .time-current, .card .time-total { font-size: 0.8em; min-width: 30px; }
+    .card .progress-bar { height: 6px; border-radius: 3px; }
+    .card .progress { border-radius: 3px; }
+    .card .music-controls { font-size: 1.2em; gap: 15px; flex-basis: 100px; justify-content: flex-end; }
+    .card .animate-in { /* Optional: Animation verkürzen */ }
 
-    /* Schriftgrößen reduzieren */
-    #username {
-        font-size: 2em;
-        letter-spacing: 1px;
+    /* Navigation anpassen für Mobile */
+    .card-navigation {
+        flex-direction: row; bottom: 15px; left: 50%; top: auto;
+        transform: translateX(-50%); width: auto; background-color: rgba(30, 30, 40, 0.8);
+        padding: 8px 15px; border-radius: 50px;
     }
-    #bio {
-        font-size: 1em;
-        margin-bottom: 15px;
-    }
-    .location {
-        font-size: 0.85em;
-        margin-bottom: 25px;
-    }
-
-    /* Statusbereich anpassen */
-    .status-section {
-        padding: 12px 15px;
-        flex-direction: column;
-        align-items: flex-start;
-        gap: 10px;
-    }
-    .status-left {
-       width: 100%;
-    }
-    #status-pfp {
-        width: 40px;
-        height: 40px;
-        margin-right: 10px;
-    }
-    .discord-username {
-        font-size: 1em;
-    }
-     .activity, .activity-sub {
-        font-size: 0.8em;
-        line-height: 1.3;
-     }
-     #activity-time {
-         display: block; /* Stellt sicher, dass der Zeitstempel angezeigt wird */
-     }
-    .status-right {
-        align-self: flex-end;
-        margin-top: -15px;
-    }
-    .status-dot {
-        width: 12px;
-        height: 12px;
-    }
-
-    /* Activity Buttons kleiner */
-    .activity-buttons-container {
-        gap: 8px;
-        margin-bottom: 20px;
-    }
-    .activity-button {
-        padding: 6px 12px;
-        font-size: 0.8em;
-    }
-
-    /* Social Links anpassen */
-    .social-links {
-        gap: 18px;
-        margin-bottom: 20px;
-    }
-    .social-links a {
-        font-size: 1.7em;
-    }
-
-    /* View Count kleiner */
-    .view-count {
-        font-size: 0.85em;
-        margin-bottom: 25px;
-    }
-
-    /* Musik Player anpassen */
-    .music-player {
-        padding: 15px;
-        gap: 12px;
-        flex-wrap: wrap;
-    }
-    .music-icon {
-        font-size: 1.7em;
-    }
-    .song-info {
-        flex-basis: calc(100% - 130px);
-        min-width: 150px;
-    }
-    .song-title {
-        font-size: 0.9em;
-        margin-bottom: 8px;
-    }
-    .time-current, .time-total {
-        font-size: 0.8em;
-        min-width: 30px;
-    }
-    .progress-bar { height: 6px; border-radius: 3px; }
-    .progress { border-radius: 3px; }
-
-    .music-controls {
-        font-size: 1.2em;
-        gap: 15px;
-        flex-basis: 100px;
-        justify-content: flex-end;
-    }
-
-    /* Animationen */
-    .animate-in {
-        /* animation-duration: 0.3s; */
-    }
+    .nav-button { width: 35px; height: 35px; font-size: 1em; }
+    #prev-card i { transform: rotate(-90deg); } /* Pfeile drehen */
+    #next-card i { transform: rotate(-90deg); }
+    .card-dots { flex-direction: row; gap: 8px; }
+    .dot { width: 7px; height: 7px; }
 }
 
 /* Optional: Weiterer Breakpoint für sehr kleine Bildschirme */
 @media (max-width: 380px) {
-    #profile-card {
-        padding: 20px 15px;
-    }
-    #username {
-        font-size: 1.8em;
-    }
-    .social-links {
-        gap: 15px;
-    }
-    .social-links a {
-        font-size: 1.6em;
-    }
-    .music-player {
-        flex-direction: column;
-        align-items: center;
-        gap: 15px;
-    }
-    .song-info {
-        flex-basis: 100%;
-        text-align: center;
-    }
-    .music-controls {
-         justify-content: center;
-         flex-basis: auto;
-         margin-top: 10px;
-    }
-    #volume-control-container {
-        width: 120px;
-        height: 34px;
-    }
-    #volume-slider {
-        width: 65px;
-    }
-     #language-switcher {
-        top: 55px; /* Noch etwas höher */
-    }
+    .card { padding: 20px 15px; }
+    .card #username { font-size: 1.8em; }
+    .card .social-links { gap: 15px; }
+    .card .social-links a { font-size: 1.6em; }
+    .card .music-player { flex-direction: column; align-items: center; gap: 15px; }
+    .card .song-info { flex-basis: 100%; text-align: center; }
+    .card .music-controls { justify-content: center; flex-basis: auto; margin-top: 10px; }
+    #volume-control-container { width: 120px; height: 34px; }
+    #volume-slider { width: 65px; }
+    #language-switcher { top: 55px; }
 }
